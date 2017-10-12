@@ -24,12 +24,51 @@
     <ClInclude Include="targetver.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="serial_communication.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="uart\uart.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="uart\uart_params.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="utility\utility.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="comm_protocol\comm_protocol.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="comm_protocol\protocol.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="device_controller\device_controller.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="ImxCamera.cpp">
+    <ClCompile Include="serial_communication.cc">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="uart\uart.cc">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="imx_camera.cc">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="utility\utility.cc">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="comm_protocol\comm_protocol.cc">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="comm_protocol\protocol.cc">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="device_controller\device_controller.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

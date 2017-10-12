@@ -89,6 +89,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <DisableSpecificWarnings>4819</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -146,17 +147,30 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="comm_protocol\comm_protocol.h" />
+    <ClInclude Include="comm_protocol\protocol.h" />
+    <ClInclude Include="device_controller\device_controller.h" />
+    <ClInclude Include="serial_communication.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="uart\uart.h" />
+    <ClInclude Include="uart\uart_params.h" />
+    <ClInclude Include="utility\utility.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ImxCamera.cpp" />
+    <ClCompile Include="comm_protocol\comm_protocol.cc" />
+    <ClCompile Include="comm_protocol\protocol.cc" />
+    <ClCompile Include="device_controller\device_controller.cc" />
+    <ClCompile Include="imx_camera.cc" />
+    <ClCompile Include="serial_communication.cc" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="uart\uart.cc" />
+    <ClCompile Include="utility\utility.cc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
