@@ -20,11 +20,13 @@ public:
 	Packet get_hReceivedPacket(void) { return hReceivedPacket; };
 	Packet get_hSendingPacket(void) { return hSendingPacket; };
 
-	int isWaitResponse(void) { return kIsWaitResponse; };
-	int isPacketIncludeInfo(void) { return kIsPacketIncludeInfo; };
+	int isWaitResponse(void) { return kIsWaitResponse_; };
+	int isPacketIncludeInfo(void) { return kIsPacketIncludeInfo_; };
 
 	void StandByMode();
 	void Reading();
+
+	
 
 	virtual void PickAndSendCommand() = 0;
 	virtual void DoCommand(void) = 0;
@@ -55,21 +57,21 @@ protected:
 	Packet hReceivedPacket;
 	Packet hSendingPacket;
 	
-	unsigned short received_data_length;
+	unsigned short received_data_length_;
 
-	unsigned long checksum;
-	unsigned long calculated_checksum;
-	unsigned long received_checksum;
+	unsigned long checksum_;
+	unsigned long calculated_checksum_;
+	unsigned long received_checksum_;
 
-	int packet_parsing_count;
-	int packet_data_count;
-	int packet_checksum_count;
+	int packet_parsing_count_; // Set start point for packet parsing
+	int packet_data_count_;
+	int packet_checksum_count_;
 
-	int kIsPacket;
-	int kIsFinishReceivePacket;
+	int kIsPacket_; // Distinguish printf and packet data from device
+	int kIsFinishReceivePacket_; // Telling it got whole packet or not
 
-	int kIsPacketIncludeInfo; // To make stable the class when use SendPacket by inheritted class, it is required
-	int kIsWaitResponse; // If it is set, we need to wait the response from device
+	int kIsPacketIncludeInfo_; // To make stable the class when use SendPacket by inheritted class, it is required
+	int kIsWaitResponse_; // If it is set, we need to wait the response from device
 	
 };
 

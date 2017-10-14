@@ -11,7 +11,10 @@ public:
 	virtual void PickAndSendCommand(void);
 	virtual void DoCommand(void);
 
+	void ShowOptions(void);
 	void ControlDevice(BYTE c);
+
+
 	void EchoTest();
 	void CheckEchoTest();
 
