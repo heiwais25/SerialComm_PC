@@ -3,6 +3,8 @@
 #include <conio.h>
 #include <iostream>
 #include <map>
+#include <ctime>
+
 
 BYTE GetOneCharKeyboardInput(void);
 
@@ -10,6 +12,13 @@ BYTE GetOneCharKeyboardInput(void);
 void SplitLine(void);
 void ReadColorFont(BYTE c);
 
+// Indicate the input c is whether the interger value or not
+BOOL isDecimalNumber(BYTE c);
+
+// Return current time info
+int getCurrentDayHourMinuteSec();
+
+// Color code table
 enum AnsiColorCode {
 	ANSI_DEFAULT = 0,
 	ANSI_BOLD = 1,

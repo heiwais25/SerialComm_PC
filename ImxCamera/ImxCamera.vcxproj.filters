@@ -45,6 +45,9 @@
     <ClInclude Include="device_controller\device_controller.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="image_processing\image_processing.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -69,6 +72,9 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="device_controller\device_controller.cc">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="image_processing\image_processing.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
