@@ -3,8 +3,15 @@
 #include <Windows.h>
 #include <iostream>
 #include <string>
-// 일단은 이 함수는 기본적으로 정해진 Resolution에 대해서 작동하는 걸로 만들었다.
-// 재활용성은 다음에 다 만들면 다시 하자
+
+// Question:
+// 1. 꼭 정해진 resolution에서만 해야 하는가?
+// 2. root를 이 프로젝트에 포함시킬수있는가? histogram용으로
+// 
+// Todo:
+// 1. 코드가 뭔가 굉장히 더럽다. 좀 청소하자
+// 2. root로 저장할 것인지 아니면 bmp로 저장할 것인지 선택사항 만들기.
+
 
 const int kImageBufferSize = 8388608; // 8MB
 const int kCsiHorizontalResolution = 1514 * 2;
@@ -31,7 +38,7 @@ class ImageProcessing {
 
 		void set_bmp_header_(int image_width, int image_height);
 		void fill_bmp_image_data_(void);
-		void write_to_file(void);
+		void write_bmp_to_file(void);
 
 		void SaveImageToBmp();
 

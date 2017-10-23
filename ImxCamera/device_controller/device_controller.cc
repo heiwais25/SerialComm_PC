@@ -171,10 +171,7 @@ void DeviceController::CheckEchoTest() {
 	std::cout << "Echo test Finish" << std::endl;
 }
 
-// 1. 약 4kbyte씩 image data를 수신
-// 2. image data를 수신하면 이를 ImageProcessing의 image buffer에 저장
-// 3. image buffer가 해당 image size로 꽉 차면 저장하기
-// 4. 아직 덜 왔으면 다음 data를 요청하기
+
 void DeviceController::CollectImageData() {
 	std::cout << "collecting..." << std::endl;
 	// Check the packet number is continuous
@@ -194,10 +191,11 @@ void DeviceController::CollectImageData() {
 	pImageProcessing_->AssembleImageData(received_packet_image_data, received_packet_data_length);
 
 	// check the image is whether the end or not
-	if (pImageProcessing_->isAssembleCompleted()) { // if end save it
+	// if end save it
+	if (pImageProcessing_->isAssembleCompleted()) 
 		pImageProcessing_->SaveImageToBmp();
-	}
-	else { // else request next image data 
+	// else request next image data 
+	else  
 		SendCommand(CAMERA_SEND_NEXT_PACKET);
-	}
+	
 }

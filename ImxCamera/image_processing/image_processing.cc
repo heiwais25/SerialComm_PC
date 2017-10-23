@@ -8,6 +8,7 @@ ImageProcessing::~ImageProcessing() {
 
 }
 
+// It will make the image array by assembling the image parts from the device
 void ImageProcessing::AssembleImageData(BYTE * image_source, WORD image_length) {
 	// Copy image from the device to image buffer
 	memcpy(image_buffer_ + image_buffer_count_, image_source, image_length);
@@ -18,17 +19,14 @@ void ImageProcessing::AssembleImageData(BYTE * image_source, WORD image_length) 
 
 // After finishing assembling, save it to bmp image
 void ImageProcessing::SaveImageToBmp() {
-	// Save it to bmp
 	// For now, it is possible to save only upper 8bits
 	set_bmp_header_(kCsiHorizontalResolution / 2, kCsiVerticalResolution);
-
 
 	// Copy header to bmp header data
 	fill_bmp_image_data_();
 
-
 	// Write bmp array into file
-	write_to_file();
+	write_bmp_to_file();
 
 	// Need to initialize instance value
 	image_buffer_count_ = 0;
@@ -50,8 +48,8 @@ void ImageProcessing::set_bmp_header_(int image_width, int image_height) {
 	// Set image width and heigt
 	bmp_header_[18] = static_cast<BYTE>(bmp_image_width_);
 	bmp_header_[19] = static_cast<BYTE>(bmp_image_width_ >> 8);
-	bmp_header_[20] = static_cast<BYTE>(bmp_image_height_);
-	bmp_header_[21] = static_cast<BYTE>(bmp_image_height_ >> 8);
+	bmp_header_[22] = static_cast<BYTE>(bmp_image_height_);
+	bmp_header_[23] = static_cast<BYTE>(bmp_image_height_ >> 8);
 
 	std::cout << "FileSize = " << bmp_file_size_ << "\tWidth = " << bmp_image_width_ << "\tHeight = " << bmp_image_height_ << std::endl;
 }
@@ -79,10 +77,10 @@ void ImageProcessing::fill_bmp_image_data_(void) {
 	}
 }
 
-
-void ImageProcessing::write_to_file() {
+// Write bmp image with bmp array
+void ImageProcessing::write_bmp_to_file() {
 	int current_time = getCurrentDayHourMinuteSec();
-	std::string file_name_str = std::to_string(current_time);
+	std::string file_name_str = std::to_string(current_time) + std::string(".bmp");
 	const char * file_name = file_name_str.c_str();
 
 	if (!(hWriteFile_ = fopen(file_name, "wb"))) {
@@ -93,13 +91,8 @@ void ImageProcessing::write_to_file() {
 	int write_count;
 	write_count = fwrite(bmp_image_data_, 1, bmp_file_size_, hWriteFile_);
 	std::cout << "Saved BMP image file name : " << file_name_str << std::endl;
-
 	fclose(hWriteFile_);
 }
-
-
-
-
 
 BYTE ImageProcessing::isAssembleCompleted() {
 	if (image_buffer_count_ == image_size_) 

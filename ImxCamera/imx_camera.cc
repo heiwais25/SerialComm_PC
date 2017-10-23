@@ -2,26 +2,12 @@
 //
 
 /* Todo
-	Uart class pointer를 어떻게 넘겨주는지, deep copy or shallow copy?
-	
-//////////////////////////////////////////////////////////////////////////////////
+	image_processing working on...
 
 	Comments
 1. normal
 	unit test
 	class pointer를 넘겨준 것에 대해 const를 설정할 수 잇는가? 그냥 넘겨준 것과 포인터로 다룰 때의 차이점은?
-2. uart/uart
-	errorHandling
-	Write / Read action에서 interval을 따로 설정해줄 필요가 있는가? 있다면 어디서 설정해야 하나?
-
-	읽기, 쓰기 
-	Communication start / finish
-
-3. utility/utility
-	GetOneCharKeyboardInput에 while을 넣어서 계속 기다리게 했다. 그러면 Reading이 문제인데, 이를 Timeout으로 해결할 수 있나?
-
-4. device_controller/device_controller
-	Protocol에서 Device에서 온 Command에 따른 Action들 설정하기
 
 */
 

@@ -23,23 +23,23 @@ const unsigned long kChecksumStandardValue = 0xffffffff;
 
 typedef struct _Packet {
 	_Packet() :number(1), command(0xff), length{ 0 }, data{ 0 } {};
-	BYTE stx;              // 1byte
-	BYTE slave_id;			// 1byte
-	BYTE number;		// 1byte
-	BYTE command;			// 1byte
-	BYTE length[2];		// 2byte
-	BYTE data[kPacketDataSize];	    // item detail transferred to board
-	BYTE checksum[4];		// 4byte
-	BYTE etx;				// 1byte
+	BYTE stx;					// 1byte
+	BYTE slave_id;				// 1byte
+	BYTE number;				// 1byte
+	BYTE command;				// 1byte
+	BYTE length[2];				// 2byte
+	BYTE data[kPacketDataSize]; // item detail transferred to board
+	BYTE checksum[4];			// 4byte
+	BYTE etx;					// 1byte
 }Packet;
 
-enum ReceiveStatus {
+const enum ReceiveStatus {
 	SLAVE_SLEEP = 0,
 	SLAVE_NORMAL_CHARACTOR,
 	SLAVE_COMMAND,
 };
 
-enum PacketCount {
+const enum PacketCount {
 	PACKET_STX = 0,
 	PACKET_SLAVE_ID,
 	PACKET_NUMBER,
@@ -54,7 +54,7 @@ enum PacketCount {
 	PACKET_ETX
 };
 
-enum DeviceCommand {
+const enum DeviceCommand {
 	BAD_COMMUNICATION = 0x01,
 	GOOD_COMMUNICATION = 0x02,
 
