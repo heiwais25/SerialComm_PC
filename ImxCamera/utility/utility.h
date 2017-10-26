@@ -14,10 +14,12 @@ void ReadColorFont(BYTE c);
 
 // Indicate the input c is whether the interger value or not
 BOOL isDecimalNumber(BYTE c);
+int toDecimalNumber(BYTE c);
 
 // Return current time info
 int getCurrentDayHourMinuteSec();
 
+int getValueLowerThanMaximum(int maximum_value);
 // Color code table
 enum AnsiColorCode {
 	ANSI_DEFAULT = 0,

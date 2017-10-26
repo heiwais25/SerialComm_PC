@@ -19,6 +19,15 @@ BOOL isDecimalNumber(BYTE c) {
 		return false;
 }
 
+int toDecimalNumber(BYTE c) {
+	if (isDecimalNumber(c)) {
+		return c - 0x30;
+	}
+	else {
+		return -1;
+	}
+}
+
 // Draw a line in the console to tell different session
 void SplitLine(void) {
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -74,6 +83,28 @@ void ChangeColor(AnsiColorCode color_code) {
 		SetConsoleTextAttribute(hConsole, const_iter->second);
 	else
 		std::cout << "It doesn't have color code at " << color_code << std::endl;
+}
+
+int getValueLowerThanMaximum(int maximum_value) {
+	int output = 0;
+	while (1) {
+		
+		std::cout << "Input lower than " << maximum_value << " : ";
+		std::cin >> output;
+		if (std::cin.fail()) {
+			std::cout << "Input correct integer number" << std::endl;
+			std::cin.clear();
+			std::cin.ignore();
+			continue;
+		}
+		if (output <= maximum_value) {
+			return output;
+		}
+		else {
+			std::cout << "Please input lowerthan " << maximum_value << std::endl;
+		}
+	}
+	
 }
 
 /*--------------------------------------------------------------------------------------------

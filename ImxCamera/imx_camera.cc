@@ -16,17 +16,21 @@
 #include "device_controller/device_controller.h"
 #include "utility/utility.h"
 
+#include "image_processing/image_processing.h"
 
 void ChooseCommMode(void);
+void UnitTest_ImageProcessing(void);
+
 
 int main()
 {
-	
+	//getValueLowerThanMaximum(3024);
+
+
 	Uart * pUart = new Uart();
 	std::string port_number = "COM4";
 	pUart->OpenPort(port_number);
 
-	//Protocol * hController = new Protocol(pUart);
 	Protocol * hController = new DeviceController(pUart);
 
 
@@ -58,4 +62,15 @@ void ChooseCommMode(void) {
 		}
 
 	}
+}
+
+/*
+	When we want to test or set image processing class, use this class to check several functions
+	What you need to do is put raw data from camera to the parameter of ReadImageData
+*/
+void UnitTest_ImageProcessing(void) {
+	std::string raw_file_name = "2417_1211";
+	ImageProcessing * pImgProcessing = new ImageProcessing();
+	pImgProcessing->ReadImageData(raw_file_name);
+	pImgProcessing->ChooseImageProcessOption();
 }
