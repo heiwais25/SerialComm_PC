@@ -1,5 +1,6 @@
 #pragma once
 #include "../utility/utility.h"
+#include "../python_plot/python_plot.h"
 #include <Windows.h>
 #include <iostream>
 #include <string>
@@ -19,6 +20,9 @@ const int kImageBufferSize = 8388608; // 8MB
 const int kCsiHorizontalResolution = 1514 * 2;
 const int kCsiVerticalResolution = 991;
 const int kBmpHeaderSize = 54;
+
+const std::string kPythonPlotFunction = "plot_image";
+const std::string kPythonSaveNumpyFunction = "save_image_by_numpy";
 
 // These constants are value for modifying CCD
 // It is empirical value
@@ -56,6 +60,7 @@ class ImageProcessing {
 			modified_raw_data_size_(0)
 		{
 			memcpy(bmp_header_, kaBmpHeader, sizeof(kaBmpHeader));
+			pPythonPlot_ = new PythonPlot();
 		};
 		~ImageProcessing();
 
@@ -82,6 +87,7 @@ class ImageProcessing {
 
 		// It needs to be replaced by python extension code
 		void PlotInPython(void);
+		void SaveInNumpyFormat(void);
 
 		void initImageProcessOption(void);
 
@@ -93,6 +99,8 @@ class ImageProcessing {
 
 
 	private:
+
+		PythonPlot * pPythonPlot_;
 
 		// Array containing default raw image data(2bytes per pixel)
 		BYTE image_buffer_[kImageBufferSize]; 
@@ -112,4 +120,6 @@ class ImageProcessing {
 
 		unsigned int image_width_;
 		unsigned int image_height_;
+
+
 };

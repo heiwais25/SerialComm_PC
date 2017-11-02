@@ -2,10 +2,12 @@
 #include "../comm_protocol/protocol.h"
 #include "../image_processing/image_processing.h"
 
+
 class DeviceController :public Protocol {
 public:
 	DeviceController(Uart * user_hUart) :Protocol(user_hUart), image_piece_number_(1) {
 		pImageProcessing_ = new ImageProcessing();
+		
 	};
 	~DeviceController();
 
@@ -16,6 +18,7 @@ public:
 
 	void CameraTest();
 	void ChooseCameraTestOption(void);
+	void CameraCaptureWithExposure(void);
 
 	void SetCameraGainOption(void);
 	void ChooseGainSettingOption(void);
@@ -31,6 +34,7 @@ public:
 	void ShowTestOptions(void);
 	void ShowEchoTestOptions(void);
 	void ShowCameraTestOption(void);
+	void ShowExposureOption(void);
 	void ShowGainSettingOption(void);
 	void ShowCDSOption(void);
 

@@ -52,6 +52,14 @@ void ImageProcessing::ChooseImageProcessOption(void) {
 				SaveInRawFormat(MODIFIED_IMAGE);
 				break;
 
+			case '5':
+				PlotInPython();
+				break;
+
+			case '6':
+				SaveInNumpyFormat();
+				break;
+
 			default:
 				break;
 			}
@@ -83,7 +91,15 @@ void ImageProcessing::SaveInRawFormat(ImageType type) {
 
 // todo....
 void ImageProcessing::PlotInPython(void) {
+	set_image_size_(MODIFIED_IMAGE);
+	pPythonPlot_->CopyRawImageData(modified_image_buffer_, modified_raw_data_size_);
+	pPythonPlot_->DrawPlot(kPythonPlotFunction);
+}
 
+void ImageProcessing::SaveInNumpyFormat(void) {
+	set_image_size_(MODIFIED_IMAGE);
+	pPythonPlot_->CopyRawImageData(modified_image_buffer_, modified_raw_data_size_);
+	pPythonPlot_->DrawPlot(kPythonSaveNumpyFunction);
 }
 
 /*
@@ -188,6 +204,8 @@ void ImageProcessing::ShowImageProcessOptions(void) {
 	std::cout << "2) Save in bmp format(modified)" << std::endl;
 	std::cout << "3) Save in raw data(default)" << std::endl;
 	std::cout << "4) Save in raw data(modified)" << std::endl;
+	std::cout << "5) Draw by python(modified)" << std::endl;
+	std::cout << "6) Save by numpy format 16bit(modified)" << std::endl;
 	std::cout << "x) Go to previous menu" << std::endl;
 }
 
@@ -263,6 +281,7 @@ BYTE ImageProcessing::isAssembleCompleted() {
 void ImageProcessing::initImageProcessOption(void) {
 	image_buffer_count_ = 0;
 	memset(image_buffer_, 0x00, sizeof(image_buffer_));
+	//pPythonPlot_->FinalizePythonThread();
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -293,6 +312,9 @@ void ImageProcessing::ReadImageData(std::string file_name) {
 	fseek(raw_input, 0, SEEK_SET);
 	hex_count = fread(image_buffer_, file_size, 1, raw_input);
 	std::cout << "Succesfully save image with size : " << file_size << std::endl;
+	for (int i = 0; i < 20; i++) {
+		printf("%02x\t", image_buffer_[i]);
+	}
 }
 
 std::string ImageProcessing::GetFileNameDayHourMinSec(void) {

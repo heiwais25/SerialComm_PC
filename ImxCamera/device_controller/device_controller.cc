@@ -92,13 +92,35 @@ void DeviceController::ChooseCameraTestOption(void) {
 		break;
 
 	case '5':
-		SendCommand(CAMERA_SEND_CAPTURED_IMAGE);
+		CameraCaptureWithExposure();
 		break;
 
 	case '6':
+		SendCommand(CAMERA_SEND_CAPTURED_IMAGE);
+		break;
+
+	case '7':
 		SetCameraGainOption();
 		break;
 	}
+}
+
+void DeviceController::CameraCaptureWithExposure(void) {
+	ShowExposureOption();
+	BYTE c;
+	while (1) {
+		c = GetOneCharKeyboardInput();
+		if (c == 'x') {
+			std::cout << "Exit" << std::endl;
+			return;
+		}
+		if (isDecimalNumber(c)) {
+			c = toDecimalNumber(c);
+			break;
+		}
+	}
+	set_hSendingPacket_with_data(0x00, CAMERA_CAPTURE_LONG_EXPOSURE, 0x01, &c);
+	SendPacket();
 }
 
 void DeviceController::SetCameraGainOption(void) {
@@ -277,8 +299,17 @@ void DeviceController::ShowCameraTestOption() {
 	std::cout << "2) Camera power off" << std::endl;
 	std::cout << "3) Show camera current gain setting" << std::endl;
 	std::cout << "4) Camera capture image" << std::endl;
-	std::cout << "5) Camera send captured image " << std::endl;
-	std::cout << "6) Camera ADC setting " << std::endl;
+	std::cout << "5) Camera capture image with long exposure" << std::endl;
+	std::cout << "6) Camera send captured image " << std::endl;
+	std::cout << "7) Camera ADC setting " << std::endl;
+	std::cout << "x) Back to previous menu" << std::endl;
+}
+
+void DeviceController::ShowExposureOption(void) {
+	SplitLine();
+	std::cout << "It will set the exposure time to capture" << std::endl;
+	for (int i = 1; i < 10; i++)
+		std::cout << i << ") " << i << "sec" << std::endl;
 	std::cout << "x) Back to previous menu" << std::endl;
 }
 
