@@ -1,6 +1,6 @@
 #pragma once
-#include "../comm_protocol/protocol.h"
-#include "../image_processing/image_processing.h"
+#include "protocol.h"
+#include "image_processing.h"
 
 
 class DeviceController :public Protocol {

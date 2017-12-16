@@ -10,7 +10,8 @@ def print_array(a):
     print(len(a))
     return 1
 
-def plot_image(raw_image_data):
+def plot_image(raw_image_data, width, height):
+    print(width, height)
     print("Hello")
     print(type(raw_image_data))
     
@@ -20,8 +21,8 @@ def plot_image(raw_image_data):
     raw_image_value = raw_image_value[::-1]
 
     # reshape
-    raw_image_width = 1319
-    raw_image_height = 976
+    raw_image_width = 1514
+    raw_image_height = 988
     raw_image_value = np.reshape(raw_image_value, (raw_image_height, raw_image_width))
 
     # matplotlib

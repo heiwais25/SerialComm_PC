@@ -82,7 +82,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(NUMPY_INCLUDE);C:\Users\heiwa\AppData\Local\Programs\Python\Python36\include;</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);C:\Users\heiwa\AppData\Local\Programs\Python\Python36\Lib\site-packages\numpy\core\include\numpy;C:\Users\heiwa\AppData\Local\Programs\Python\Python36\include</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;C:\Users\heiwa\AppData\Local\Programs\Python\Python36\libs</LibraryPath>
     <LibraryWPath>$(WindowsSDK_MetadataPath);C:\Users\heiwa\AppData\Local\Programs\Python\Python36\libs</LibraryWPath>
   </PropertyGroup>
@@ -139,6 +139,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>E:\WorkingArea\imxCamera\ImxCamera\ImxCamera;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\utility;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\uart;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\python_plot;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\image_processing;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\device_controller;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\comm_protocol;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

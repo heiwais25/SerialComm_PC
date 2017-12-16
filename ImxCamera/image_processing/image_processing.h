@@ -1,24 +1,23 @@
 #pragma once
-#include "../utility/utility.h"
-#include "../python_plot/python_plot.h"
 #include <Windows.h>
 #include <iostream>
 #include <string>
 #include <fstream>
 
+#include "utility.h"
+#include "python_plot.h"
+
 // Question:
 // 1. 꼭 정해진 resolution에서만 해야 하는가?
-// 2. root를 이 프로젝트에 포함시킬수있는가? histogram용으로
-// 
-// Todo:
-// 1. 코드가 뭔가 굉장히 더럽다. 좀 청소하자
-// 2. root로 저장할 것인지 아니면 bmp로 저장할 것인지 선택사항 만들기.
+
 
 const std::string output_dir = "output/";
 
 const int kImageBufferSize = 8388608; // 8MB
-const int kCsiHorizontalResolution = 1514 * 2;
-const int kCsiVerticalResolution = 991;
+//const int kCsiHorizontalResolution = 1514 * 2;
+//const int kCsiVerticalResolution = 991;
+const int kCsiHorizontalResolution = (1514 - 138) * 2;
+const int kCsiVerticalResolution = 988;
 const int kBmpHeaderSize = 54;
 
 const std::string kPythonPlotFunction = "plot_image";
@@ -29,8 +28,18 @@ const std::string kPythonSaveNumpyFunction = "save_image_by_numpy";
 const int kRightBlack = 138;
 const int kRightGray = 41;
 const int kLeftGray = 16;
-const int kBottomBlack = 2;
-const int kTopBlack = 13;
+
+
+
+
+// New version
+const int kCenterBlackLine = 56;
+const int kRightImageWidth = 147;
+const int kTopBlack = 3;
+const int kBottomBlack = 38;
+const int kLeftOneLine = 1; // There are duplicated line at the left corner
+//const int 
+
 
 const BYTE kaBmpHeader[] = 
 { 0x42, 0x4d, 0xbc, 0xc5, 0x44, 0x00, 0x00, 0x00, 0x00, 0x00, 0x36, 0x00, 0x00, 0x00, 0x28, 0x00,
@@ -121,5 +130,6 @@ class ImageProcessing {
 		unsigned int image_width_;
 		unsigned int image_height_;
 
-
+		unsigned int modified_width_;
+		unsigned int modified_height_;
 };

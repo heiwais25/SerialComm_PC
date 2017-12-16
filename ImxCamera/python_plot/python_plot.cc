@@ -2,9 +2,10 @@
 #include "python_plot.h"
 
 // Todo
-// 1. Cleaning up the numpy including statement
-// 2. How to add finalize step : it is necessary for prevent memory leakage
-// 3. Sometimes, there are falut in 'SetPySysPath' function in local debuggin. reason?
+// 1. How to add finalize step : it is necessary for prevent memory leakage
+//
+// xxx
+// 1. I don't know the detail reason now.. But by putting sleep function to the function calling pythonplot, it seems stable now
 
 
 // It is basically set to already made python script
@@ -63,6 +64,31 @@ void PythonPlot::CopyRawImageData(BYTE * pRawImageData, int image_length) {
 	image_length_ = image_length;
 	vdim_[0] = image_length_;
 	kIsImageDataCopied = true;
+	printf("Copy raw image data\n");
+}
+
+/*=======================================================================================================================
+
+Name : CopyRawImageData
+
+Params : 
+
+Feature : 
+
+Day :
+
+=======================================================================================================================*/
+void PythonPlot::CopyRawImageData(BYTE * pRawImageData, int width, int height) {
+	pImageData_ = pRawImageData;
+	image_width_ = width;
+	image_height_ = height;
+	image_length_ = width * 2 * height;
+
+	pWidth = PyLong_FromLong(width);
+	pHeight = PyLong_FromLong(height);
+	vdim_[0] = image_length_;
+	kIsImageDataCopied = true;
+	printf("Copy raw image data\n");
 }
 
 // Draw plot : It is main stream code
@@ -150,8 +176,10 @@ int PythonPlot::CopyArrayToNumpyArray() {
 }
 
 void PythonPlot::SendNumpyArrayToPythonFunction() {
-	pArgs = PyTuple_New(1);
+	pArgs = PyTuple_New(3); // 0 : Array data, 1 : Width, 2 : Height
 	PyTuple_SetItem(pArgs, 0, pVec);
+	PyTuple_SetItem(pArgs, 1, pWidth);
+	PyTuple_SetItem(pArgs, 2, pHeight);
 	pValue = PyObject_CallObject(pFunc, pArgs);
 	Py_DECREF(pArgs);
 }

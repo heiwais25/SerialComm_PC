@@ -1,8 +1,9 @@
 #pragma once
-#include "../uart/uart.h"
-#include "../utility/utility.h"
-#include "../comm_protocol/comm_protocol.h"
 #include <Windows.h>
+#include "uart.h"
+#include "utility.h"
+#include "comm_protocol.h"
+
 
 
 class Protocol

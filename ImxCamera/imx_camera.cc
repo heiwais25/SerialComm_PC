@@ -12,11 +12,11 @@
 */
 
 #include "stdafx.h"
-#include "uart/uart.h"
-#include "device_controller/device_controller.h"
-#include "utility/utility.h"
+#include "uart.h"
+#include "device_controller.h"
+#include "utility.h"
+#include "image_processing.h"
 
-#include "image_processing/image_processing.h"
 
 void ChooseCommMode(void);
 void UnitTest_ImageProcessing(void);
@@ -24,17 +24,18 @@ void UnitTest_ImageProcessing(void);
 
 int main()
 {
-	
-	Uart * pUart = new Uart();
-	std::string port_number = "COM4";
-	pUart->OpenPort(port_number);
+	while(1)
+		UnitTest_ImageProcessing();
+	//Uart * pUart = new Uart();
+	//std::string port_number = "COM4";
+	//pUart->OpenPort(port_number);
 
-	Protocol * hController = new DeviceController(pUart);
+	//Protocol * hController = new DeviceController(pUart);
 
 
-	// Choose whether start communicate or other option
-	ChooseCommMode();
-	hController->StandByMode();
+	////// Choose whether start communicate or other option
+	//ChooseCommMode();
+	//hController->StandByMode();
 
 
     return 0;
@@ -67,7 +68,7 @@ void ChooseCommMode(void) {
 	What you need to do is put raw data from camera to the parameter of ReadImageData
 */
 void UnitTest_ImageProcessing(void) {
-	std::string raw_file_name = "raw_image_sample";
+	std::string raw_file_name = "output/1414_3756";
 	ImageProcessing * pImgProcessing = new ImageProcessing();
 	pImgProcessing->ReadImageData(raw_file_name);
 	pImgProcessing->ChooseImageProcessOption();

@@ -91,14 +91,16 @@ void ImageProcessing::SaveInRawFormat(ImageType type) {
 
 // todo....
 void ImageProcessing::PlotInPython(void) {
+	Sleep(700 /* ms */);
 	set_image_size_(MODIFIED_IMAGE);
-	pPythonPlot_->CopyRawImageData(modified_image_buffer_, modified_raw_data_size_);
+	pPythonPlot_->CopyRawImageData(modified_image_buffer_, modified_width_, modified_height_);
 	pPythonPlot_->DrawPlot(kPythonPlotFunction);
 }
 
 void ImageProcessing::SaveInNumpyFormat(void) {
+	Sleep(700 /* ms */);
 	set_image_size_(MODIFIED_IMAGE);
-	pPythonPlot_->CopyRawImageData(modified_image_buffer_, modified_raw_data_size_);
+	pPythonPlot_->CopyRawImageData(modified_image_buffer_, modified_width_, modified_height_);
 	pPythonPlot_->DrawPlot(kPythonSaveNumpyFunction);
 }
 
@@ -106,13 +108,16 @@ void ImageProcessing::SaveInNumpyFormat(void) {
 	Register image information to instance every time user set image processing option
 */
 void ImageProcessing::set_image_size_(ImageType mode) {
-	int modified_width = kCsiHorizontalResolution / 2 - (kRightBlack + kRightGray + kLeftGray);
-	int modified_height = kCsiVerticalResolution - (kBottomBlack + kTopBlack);
+	// TODO : Change this modified width
+	//int modified_width = kCsiHorizontalResolution / 2 - (kRightBlack + kRightGray + kLeftGray);
+	modified_width_ = kCsiHorizontalResolution / 2 - (kCenterBlackLine);
+	//int modified_height = kCsiVerticalResolution - (kBottomBlack + kTopBlack);
+	modified_height_ = kCsiVerticalResolution - (kBottomBlack + kTopBlack);
 
 	if (mode == MODIFIED_IMAGE) { // Apply modification
-		image_width_ = modified_width;
-		image_height_ = modified_height;
-		modified_raw_data_size_ = modified_width * 2 * modified_height;
+		image_width_ = modified_width_;
+		image_height_ = modified_height_;
+		modified_raw_data_size_ = modified_width_ * 2 * modified_height_;
 		ApplyCutEachSide();
 	}
 	else { // default mode
@@ -144,7 +149,7 @@ void ImageProcessing::fill_bmp_image_data_(ImageType type) {
 	int image_count = kBmpHeaderSize;
 	for (unsigned int vertical_count = 0; vertical_count < image_height_; vertical_count++) {
 		for (unsigned int horizontal_count = 0; horizontal_count < image_width_; horizontal_count++) {
-			pixel_value = pImgData[horizontal_count * 2 + vertical_count * image_width_ * 2];
+			pixel_value = pImgData[horizontal_count * 2 + vertical_count * image_width_ * 2 + 1];
 			bmp_image_data_[image_count + offset_count] = pixel_value;
 			bmp_image_data_[image_count + offset_count + 1] = pixel_value;
 			bmp_image_data_[image_count + offset_count + 2] = pixel_value;
@@ -180,17 +185,52 @@ void ImageProcessing::set_bmp_header_(void) {
 // Because we get the raw data from camera, there are black and gray area which is not operating parts
 // To deal with pixels operating correctly, I applied the cutting each side gray and black
 void ImageProcessing::ApplyCutEachSide(void) {
-	BYTE pixel_value;
+	// TODO(1217)
+	// Do we need to find center black line and fix automatically or it is fixed pattern?
+	// After fix this problem, I need to make image showing what this function do
+	// It seems there are duplicated line at horizontal 146,147 pixel. We need to take another sample picture
+
+	// 1. Cut down side 
+	int vertical_offset_bottom = kBottomBlack;
+
+	// 2. Move right part of image to left side
+	
+	int raw_image_width = image_width_ + kCenterBlackLine;
+	int start_offset = (raw_image_width - kRightImageWidth) * 2; // Horizontal start point of right valid image
+
+	for (int vertical_count = 0; vertical_count < image_height_; vertical_count++) {
+
+		// Copy right valid image first to new image buffer 
+		for (int horizontal_count = 0; horizontal_count < raw_image_width  * 2 - start_offset; horizontal_count++) {
+			BYTE pixel_value = image_buffer_[(horizontal_count + start_offset) + (vertical_count + vertical_offset_bottom)* kCsiHorizontalResolution];
+			modified_image_buffer_[horizontal_count + vertical_count * image_width_ * 2] = pixel_value;
+		}
+
+		// Copy left valid image next to right image
+		for (int horizontal_count = 0; horizontal_count  < start_offset - kCenterBlackLine * 2; horizontal_count++) {
+			BYTE pixel_value = image_buffer_[(horizontal_count) + (vertical_count + vertical_offset_bottom)* kCsiHorizontalResolution];
+			modified_image_buffer_[kRightImageWidth * 2 + horizontal_count + vertical_count * image_width_ * 2] = pixel_value;
+		}
+	}
+
+	// 3. Cut right side which is not interested in
+
+
+
+
+	
+
+	/*BYTE pixel_value;
 	int horizontal_offset_by_sensor = kLeftGray;
 	int vertical_offset_by_sensor = kBottomBlack;
-	for (unsigned int vertical_count = 0; vertical_count < image_height_; vertical_count++) {
-		for (unsigned int horizontal_count = 0; horizontal_count < image_width_ * 2; horizontal_count++) {
+	for(unsigned int vertical_count = 0; vertical_count < image_height_; vertical_count++) {
+		for(unsigned int horizontal_count = 0; horizontal_count < image_width_ * 2; horizontal_count++) {
 			pixel_value = image_buffer_[(horizontal_offset_by_sensor * 2 + horizontal_count) +
 				(vertical_count + vertical_offset_by_sensor) * kCsiHorizontalResolution];
 
 			modified_image_buffer_[horizontal_count + vertical_count * image_width_ * 2] = pixel_value;
 		}
-	}
+	}*/
 }
 
 /*--------------------------------------------------------------------------------------------------------------

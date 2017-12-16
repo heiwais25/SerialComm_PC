@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <typeinfo>
 
-#include "../serial_communication.h"
+#include "serial_communication.h"
 #include "uart_params.h"
 
 

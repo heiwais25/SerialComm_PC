@@ -2,11 +2,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 
-raw_image_width = 1319
-raw_image_height = 976    
+# These values are default value
+# raw_image_width = 1319
+# raw_image_height = 976    
 
-def plot_image(raw_image_data):
-    raw_image_nparray = image_processing_1d_to_2d(raw_image_data, raw_image_width, raw_image_height)
+def plot_image(raw_image_data, width, height):
+    print(width, height)
+    raw_image_nparray = image_processing_1d_to_2d(raw_image_data, width, height)
     fig = set_plotting_detail(raw_image_nparray)    
     file_name = 'output/%s.png' % (getCurrentDayHourMinuteSec())
     fig.savefig(file_name)
@@ -15,8 +17,8 @@ def plot_image(raw_image_data):
     return 1
 
 
-def save_image_by_numpy(raw_image_data):
-    raw_image_nparray = image_processing_1d_to_2d(raw_image_data, raw_image_width, raw_image_height)
+def save_image_by_numpy(raw_image_data, width, height):
+    raw_image_nparray = image_processing_1d_to_2d(raw_image_data, width, height)
     file_name = 'output/%s_np2dArray' % (getCurrentDayHourMinuteSec())
     raw_image_nparray.tofile(file_name)
     print("File saved at '%s'" % file_name)
@@ -46,7 +48,7 @@ def set_plotting_detail(raw_image_nparray):
 # It is necessary to draw np 2d array
 def image_processing_1d_to_2d(raw_image_data, width, height):
     raw_image_data_int = raw_image_data.astype(np.int16) # Change data type to int
-    raw_image_nparray = np.right_shift(raw_image_data_int[1::2],4) + np.left_shift(raw_image_data_int[0::2],4)
+    raw_image_nparray = np.right_shift(raw_image_data_int[0::2],4) + np.left_shift(raw_image_data_int[1::2],4)
     raw_image_nparray = raw_image_nparray[::-1]
 
     # reshape
