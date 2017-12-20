@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
-
+#include <vector>
 #include "utility.h"
 #include "python_plot.h"
 
@@ -19,6 +19,7 @@ const int kImageBufferSize = 8388608; // 8MB
 const int kCsiHorizontalResolution = (1514 - 138) * 2;
 const int kCsiVerticalResolution = 988;
 const int kBmpHeaderSize = 54;
+const int kEffectiveImageHeight = 948;
 
 const std::string kPythonPlotFunction = "plot_image";
 const std::string kPythonSaveNumpyFunction = "save_image_by_numpy";
@@ -38,7 +39,18 @@ const int kRightImageWidth = 147;
 const int kTopBlack = 3;
 const int kBottomBlack = 38;
 const int kLeftOneLine = 1; // There are duplicated line at the left corner
-//const int 
+
+// There are horizontal black pixel region at the some point of image. Basically, the width of black pixel is 21
+const int kBlackPixelWidth = 21;
+// Left side of black pixel, there are gray pixel region including one black line at the left side. The width of this region is 20
+const int kLeftGrayPixelWidth = 20;
+// Right side of black pixel, there are also gray pixel reion simliar to left region. The width is 15
+const int kRightGrayPixelWidth = 15;
+// So, the total gray + black region width is 56 = kCenterBlackLine
+
+// There are cut image with this length. It seems there are some problem in sync. 
+// So, we need to cut this image and attach left side to main image part
+//const int kChoppedImage = 147;
 
 
 const BYTE kaBmpHeader[] = 
@@ -69,12 +81,14 @@ class ImageProcessing {
 			modified_raw_data_size_(0)
 		{
 			memcpy(bmp_header_, kaBmpHeader, sizeof(kaBmpHeader));
+			original_width_ = kCsiHorizontalResolution / 2;
+			original_height_ = kCsiVerticalResolution;
 			pPythonPlot_ = new PythonPlot();
 		};
 		~ImageProcessing();
 
 		void AssembleImageData(BYTE * image_source, WORD image_length);
-		void ApplyCutEachSide();
+		
 
 		
 
@@ -83,8 +97,6 @@ class ImageProcessing {
 		void set_bmp_header_(void);
 
 		void fill_bmp_image_data_(ImageType type);
-		void fill_modified_bmp_image_data_(void);
-
 		void write_bmp_to_file(void);
 		void write_raw_data_to_file(ImageType type);
 
@@ -105,6 +117,14 @@ class ImageProcessing {
 		std::string GetFileNameDayHourMinSec();
 
 		void ReadImageData(std::string file_name);
+		int ImageProcessing::GetBlackPixelHeightFromBottom(int horizontal_pixel);
+
+
+		// Cutting image and collect correctly
+		int GetBlackLineStartPoint();
+		int GetChoppedImageOffset();
+		int GetChoppedImageLength(int horizontal_offset);
+		void ApplyCutEachSide();
 
 
 	private:
@@ -132,4 +152,9 @@ class ImageProcessing {
 
 		unsigned int modified_width_;
 		unsigned int modified_height_;
+
+		unsigned int original_width_;
+		unsigned int original_height_;
+
+		int invalid_pixel_offset_;
 };

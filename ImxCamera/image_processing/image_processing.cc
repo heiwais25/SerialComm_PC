@@ -109,12 +109,16 @@ void ImageProcessing::SaveInNumpyFormat(void) {
 */
 void ImageProcessing::set_image_size_(ImageType mode) {
 	// TODO : Change this modified width
-	//int modified_width = kCsiHorizontalResolution / 2 - (kRightBlack + kRightGray + kLeftGray);
 	modified_width_ = kCsiHorizontalResolution / 2 - (kCenterBlackLine);
-	//int modified_height = kCsiVerticalResolution - (kBottomBlack + kTopBlack);
-	modified_height_ = kCsiVerticalResolution - (kBottomBlack + kTopBlack);
+
+	// Height position can be different
+	modified_height_ = kEffectiveImageHeight;
+
+
+	// modified_height_ = kCsiVerticalResolution;
 
 	if (mode == MODIFIED_IMAGE) { // Apply modification
+		GetBlackLineStartPoint();
 		image_width_ = modified_width_;
 		image_height_ = modified_height_;
 		modified_raw_data_size_ = modified_width_ * 2 * modified_height_;
@@ -182,55 +186,187 @@ void ImageProcessing::set_bmp_header_(void) {
 	std::cout << "FileSize = " << bmp_file_size_ << "\tWidth = " << image_width_ << "\tHeight = " << image_height_ << std::endl;
 }
 
-// Because we get the raw data from camera, there are black and gray area which is not operating parts
-// To deal with pixels operating correctly, I applied the cutting each side gray and black
-void ImageProcessing::ApplyCutEachSide(void) {
-	// TODO(1217)
-	// Do we need to find center black line and fix automatically or it is fixed pattern?
-	// After fix this problem, I need to make image showing what this function do
-	// It seems there are duplicated line at horizontal 146,147 pixel. We need to take another sample picture
+/*===============================================================================================================================================================================================================================================================
 
-	// 1. Cut down side 
-	int vertical_offset_bottom = kBottomBlack;
+Name:			GetBlackLineStartPoint
 
-	// 2. Move right part of image to left side
+Description:	There are invalid region somewhere in the image. It seems the starting point is not fixed. So, this function will find the invalid image region and return
+			    the offset of invalid image region. The region is consist of gray + black + gray line and total width is 56
+
+Parameters:		void
+
+Returns:		(int)start offset of invalid image region
+
+===============================================================================================================================================================================================================================================================*/
+int ImageProcessing::GetBlackLineStartPoint(void) {
+	set_image_size_(DEFAULT_IMAGE);
 	
-	int raw_image_width = image_width_ + kCenterBlackLine;
-	int start_offset = (raw_image_width - kRightImageWidth) * 2; // Horizontal start point of right valid image
+	bool kIsBlackLine = false;
+	int black_pixel_count = 0;
+	int original_image_width = image_width_;
+	int black_pixel_start_pixel;
+	int sample_vi = 400;
 
-	for (int vertical_count = 0; vertical_count < image_height_; vertical_count++) {
+	for (int hi = 0; hi < original_image_width; hi++) {
+		BYTE high_byte = image_buffer_[hi * 2 + sample_vi * original_image_width + 1];
+		if (high_byte < 0x5) { // 0x5 : Proper value indicating black(invalid) pixel
+			kIsBlackLine = true;
+			black_pixel_count++;
+		}
 
-		// Copy right valid image first to new image buffer 
-		for (int horizontal_count = 0; horizontal_count < raw_image_width  * 2 - start_offset; horizontal_count++) {
-			BYTE pixel_value = image_buffer_[(horizontal_count + start_offset) + (vertical_count + vertical_offset_bottom)* kCsiHorizontalResolution];
+		if (kIsBlackLine && high_byte >= 0x5) {
+			kIsBlackLine = false;
+			if (black_pixel_count == kBlackPixelWidth) {
+				black_pixel_start_pixel = hi - kBlackPixelWidth;
+				break;
+			}
+			else {
+				black_pixel_count = 0;
+			}
+		}
+	}
+
+	// invalid_pixel_offset_ : Offset of gray+black pixel
+	invalid_pixel_offset_ = black_pixel_start_pixel - kLeftGrayPixelWidth;
+	return black_pixel_start_pixel;
+}
+
+/*===============================================================================================================================================================================================================================================================
+
+Name:			GetBlackPixelHeightFromBottom
+
+Description:	Calculate how many black pixel exist from bottom
+
+Parameters:		horizontal pixel : the horizontal offset we want to calculate the black pixel height
+		
+Returns:		(int) height
+
+===============================================================================================================================================================================================================================================================*/
+int ImageProcessing::GetBlackPixelHeightFromBottom(int horizontal_pixel) {
+	int vi = 0;
+	while (image_buffer_[horizontal_pixel + vi * kCsiHorizontalResolution + 1] > 0x5) 
+		vi++;
+	return vi;
+}
+
+/*===============================================================================================================================================================================================================================================================
+
+Name:			GetChoppedImageOffset
+
+Description:
+
+Parameters:
+
+Returns:
+
+===============================================================================================================================================================================================================================================================*/
+int ImageProcessing::GetChoppedImageOffset() {
+	int start_offset = (invalid_pixel_offset_ + kCenterBlackLine) * 2;
+	if (start_offset / 2 > original_width_) {
+		std::cout << "Error on getting chopped image offset" << std::endl;
+		return -1;
+	}
+
+	if (start_offset == original_width_ * 2)
+		start_offset = 0;
+	return start_offset;
+}
+
+/*===============================================================================================================================================================================================================================================================
+
+Name:			GetChoppedImageOffset
+
+Description:
+
+Parameters:
+
+Returns:
+
+===============================================================================================================================================================================================================================================================*/
+int ImageProcessing::GetChoppedImageLength(int horizontal_offset) {
+	int black_pixel_length_from_bottom;
+	int chopped_image_length;
+	bool kIsBlackStart = false;
+	if (horizontal_offset == 0) {
+		for (int hi = horizontal_offset; hi < original_width_ * 2; hi++) {
+			int vi = 0;
+			BYTE high_byte = image_buffer_[hi * 2 + 1];
+			if (high_byte < 0x5) {
+				while (image_buffer_[hi * 2 + 1 + vi * kCsiHorizontalResolution] < 0x5) {
+					vi++;
+				}
+				if (kIsBlackStart && vi != black_pixel_length_from_bottom) {
+					chopped_image_length = hi;
+					break;
+				}
+				else {
+					kIsBlackStart = true;
+					black_pixel_length_from_bottom = vi;
+				}
+			}
+		}
+	}
+	else {
+		chopped_image_length = (original_width_ - horizontal_offset / 2);
+	}
+	return chopped_image_length;
+}
+
+/*===============================================================================================================================================================================================================================================================
+
+Name:			ApplyCutEachSide
+
+Description:	This function is required because the position of valid image is fluctuate little bit
+				In this function, it will find invalid line area, chopped image and main image position and re-arrange them to correct image
+
+Parameters:		void
+
+Returns:		void
+
+===============================================================================================================================================================================================================================================================*/
+void ImageProcessing::ApplyCutEachSide(void) {
+	// Calculate chopped image offset
+	int chopped_image_horizontal_offset = GetChoppedImageOffset();
+
+	// 1. Find the vertical offset of first black line
+	int black_pixel_vertical_offset = GetBlackPixelHeightFromBottom((invalid_pixel_offset_ + kLeftGrayPixelWidth)*2);
+
+	// 2. Calculate the vertical offset of chopped image
+	//    Usually, the difference between both line is 13
+	int chopped_image_vertical_offset = black_pixel_vertical_offset + 13;
+
+	// 3. Calculate chopped image length
+	int chopped_image_length = GetChoppedImageLength(chopped_image_horizontal_offset);
+
+	std::cout << "Chopped Image Information--------------------------------------------------" << std::endl;
+	std::cout << "Horizontal offset : " << chopped_image_horizontal_offset << std::endl;
+	std::cout << "Vertical offset   : " << chopped_image_vertical_offset << std::endl;
+	std::cout << "Image length      : " << chopped_image_length << std::endl;
+	std::cout << "---------------------------------------------------------------------------" << std::endl;
+
+	// 4. Set main image offset information
+	// Usually, the difference of the vertical offset between main image and chopped image is 1
+	int main_image_horizontal_offset = chopped_image_horizontal_offset == 0 ? (chopped_image_length) * 2 : 0;
+	int main_image_vertical_offset = chopped_image_vertical_offset + 1;
+	int main_image_vertical_offset_bottom = main_image_vertical_offset;
+	int main_image_vertical_offset_top = main_image_vertical_offset + kEffectiveImageHeight;
+	int main_image_length = chopped_image_horizontal_offset == 0 ? invalid_pixel_offset_ - chopped_image_length : invalid_pixel_offset_;
+	
+	for (int vertical_count = 0; vertical_count < kEffectiveImageHeight; vertical_count++) {
+		// Copy right image from invalid region first to new image buffer 
+		for (int horizontal_count = 0; horizontal_count < chopped_image_length * 2; horizontal_count++) {
+			BYTE pixel_value = image_buffer_[(chopped_image_horizontal_offset + horizontal_count) + \
+								(vertical_count + main_image_vertical_offset_bottom - 1)* kCsiHorizontalResolution];
 			modified_image_buffer_[horizontal_count + vertical_count * image_width_ * 2] = pixel_value;
 		}
 
 		// Copy left valid image next to right image
-		for (int horizontal_count = 0; horizontal_count  < start_offset - kCenterBlackLine * 2; horizontal_count++) {
-			BYTE pixel_value = image_buffer_[(horizontal_count) + (vertical_count + vertical_offset_bottom)* kCsiHorizontalResolution];
-			modified_image_buffer_[kRightImageWidth * 2 + horizontal_count + vertical_count * image_width_ * 2] = pixel_value;
+		for (int horizontal_count = 0; horizontal_count  < main_image_length * 2; horizontal_count++) {
+			BYTE pixel_value = image_buffer_[(horizontal_count + main_image_horizontal_offset) + \
+									(vertical_count + main_image_vertical_offset_bottom)* kCsiHorizontalResolution];
+			modified_image_buffer_[chopped_image_length * 2 + horizontal_count + vertical_count * image_width_ * 2] = pixel_value;
 		}
 	}
-
-	// 3. Cut right side which is not interested in
-
-
-
-
-	
-
-	/*BYTE pixel_value;
-	int horizontal_offset_by_sensor = kLeftGray;
-	int vertical_offset_by_sensor = kBottomBlack;
-	for(unsigned int vertical_count = 0; vertical_count < image_height_; vertical_count++) {
-		for(unsigned int horizontal_count = 0; horizontal_count < image_width_ * 2; horizontal_count++) {
-			pixel_value = image_buffer_[(horizontal_offset_by_sensor * 2 + horizontal_count) +
-				(vertical_count + vertical_offset_by_sensor) * kCsiHorizontalResolution];
-
-			modified_image_buffer_[horizontal_count + vertical_count * image_width_ * 2] = pixel_value;
-		}
-	}*/
 }
 
 /*--------------------------------------------------------------------------------------------------------------

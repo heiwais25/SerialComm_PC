@@ -49,7 +49,7 @@ def set_plotting_detail(raw_image_nparray):
 def image_processing_1d_to_2d(raw_image_data, width, height):
     raw_image_data_int = raw_image_data.astype(np.int16) # Change data type to int
     raw_image_nparray = np.right_shift(raw_image_data_int[0::2],4) + np.left_shift(raw_image_data_int[1::2],4)
-    raw_image_nparray = raw_image_nparray[::-1]
+    #raw_image_nparray = raw_image_nparray[::-1]
 
     # reshape
     raw_image_nparray = np.reshape(raw_image_nparray, (height, width))

@@ -24,21 +24,25 @@ void UnitTest_ImageProcessing(void);
 
 int main()
 {
-	while(1)
-		UnitTest_ImageProcessing();
-	//Uart * pUart = new Uart();
-	//std::string port_number = "COM4";
-	//pUart->OpenPort(port_number);
+	int mode = 1; // 1 : Image Processing Test // 2 : Communication with board
+	if (mode == 1) {
+		while (1)
+			UnitTest_ImageProcessing(); 
+	}
+	else {
+		Uart * pUart = new Uart();
+		std::string port_number = "COM6";
+		pUart->OpenPort(port_number);
 
-	//Protocol * hController = new DeviceController(pUart);
+		Protocol * hController = new DeviceController(pUart);
 
 
-	////// Choose whether start communicate or other option
-	//ChooseCommMode();
-	//hController->StandByMode();
-
-
-    return 0;
+		//// Choose whether start communicate or other option
+		ChooseCommMode();
+		hController->StandByMode();
+	}
+	
+	return 0;
 }
 
 void ChooseCommMode(void) {
@@ -68,8 +72,13 @@ void ChooseCommMode(void) {
 	What you need to do is put raw data from camera to the parameter of ReadImageData
 */
 void UnitTest_ImageProcessing(void) {
-	std::string raw_file_name = "output/1414_3756";
+	//std::string raw_file_name = "output/1414_3756";
+	//std::string raw_file_name = "output/2008_5124";
+	//std::string raw_file_name = "output/1420_0736";
+	std::string raw_file_name = "output/1814_4627";
 	ImageProcessing * pImgProcessing = new ImageProcessing();
 	pImgProcessing->ReadImageData(raw_file_name);
+	std::cout << std::endl;
+	std::cout << "Offset : " << pImgProcessing->GetBlackLineStartPoint() << std::endl;
 	pImgProcessing->ChooseImageProcessOption();
 }
