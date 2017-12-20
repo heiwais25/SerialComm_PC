@@ -24,7 +24,7 @@ void UnitTest_ImageProcessing(void);
 
 int main()
 {
-	int mode = 1; // 1 : Image Processing Test // 2 : Communication with board
+	int mode = 2; // 1 : Image Processing Test // 2 : Communication with board
 	if (mode == 1) {
 		while (1)
 			UnitTest_ImageProcessing(); 

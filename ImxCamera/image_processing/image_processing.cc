@@ -393,6 +393,8 @@ void ImageProcessing::AssembleImageData(BYTE * image_source, WORD image_length) 
 	image_buffer_count_ += image_length;
 }
 
+
+
 /*
 	Write bmp image data carried in image buffer to file
 	file name is the format of day_hour_min_sec.bmp

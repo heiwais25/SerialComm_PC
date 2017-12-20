@@ -100,6 +100,10 @@ void DeviceController::ChooseCameraTestOption(void) {
 		break;
 
 	case '7':
+		SendCommand(CAMERA_SEND_PACKED_DATA);
+		break;
+
+	case '8':
 		SetCameraGainOption();
 		break;
 	}
@@ -180,6 +184,10 @@ void DeviceController::DoCommand(void) {
 			CollectImageData();
 			break;
 
+		case CAMERA_SEND_PACKED_DATA:
+			CollectPackedImageData();
+			break;
+
 		default:
 			printf("%x\n", hReceivedPacket.command);
 			break;
@@ -216,11 +224,68 @@ void DeviceController::CollectImageData() {
 	// send this data to image processing class
 	pImageProcessing_->AssembleImageData(hReceivedPacket.data, received_packet_data_length);
 
-	if (pImageProcessing_->isAssembleCompleted())
+	if (pImageProcessing_->isAssembleCompleted()) {
 		pImageProcessing_->ChooseImageProcessOption();
+		image_piece_number_ = 0;
+	}
 	else  
 		SendCommand(CAMERA_SEND_NEXT_PACKET);
+}
+
+
+/*===============================================================================================================================================================================================================================================================
+
+Name:			CollectPackedImageData
+
+Description:	When device send packed data(2pixel in 3bytes), we need to unpack first and collect them in image buffer
+				This function will do unpacking and send them to image process class to make full image
+
+Parameters:		void
+
+Returns:
+
+Date:			2017-12-20
+
+===============================================================================================================================================================================================================================================================*/
+void DeviceController::CollectPackedImageData(void) {
+	if (image_piece_number_ != hReceivedPacket.number)
+		std::cerr << "The order of data is packet is wr ong" << std::endl;
+	else
+		image_piece_number_++;
+
+	BYTE image_buffer[(kPacketDataSize * 4) / 3];
 	
+	// Because the packed data is 3n or 3n-1, we need to deal with them seperately
+	int unpacked_data_length = received_packet_data_length % 3 == 0 ? (received_packet_data_length * 4) / 3 : \
+																	((received_packet_data_length - 2) * 4) / 3 + 2;
+	int flag_even_odd = 0;
+	int pixel_count = -1;
+	char check_one_pixel = 0;
+	int count = 0;
+	for (int i = 0; i < unpacked_data_length; i++) {
+		if (check_one_pixel % 2 == 0) {
+			check_one_pixel = 0;
+			pixel_count++;
+			flag_even_odd = pixel_count % 2 == 0 ? 0 : 1;
+		}
+		if (flag_even_odd) { // odd
+			image_buffer[i] = check_one_pixel ? hReceivedPacket.data[count++] : (hReceivedPacket.data[count - 2] & 0x0f) << 4;
+		}
+		else { // even
+			image_buffer[i] = check_one_pixel ? hReceivedPacket.data[count++] : hReceivedPacket.data[count++] & 0xf0;
+		}
+		check_one_pixel++;
+	}
+
+	// send this data to image processing class
+	pImageProcessing_->AssembleImageData(image_buffer, unpacked_data_length);
+
+	if (pImageProcessing_->isAssembleCompleted()) {
+		pImageProcessing_->ChooseImageProcessOption();
+		image_piece_number_ = 0;
+	}
+	else
+		SendCommand(CAMERA_SEND_NEXT_PACKET);
 }
 
 /*
@@ -301,7 +366,8 @@ void DeviceController::ShowCameraTestOption() {
 	std::cout << "4) Camera capture image" << std::endl;
 	std::cout << "5) Camera capture image with long exposure" << std::endl;
 	std::cout << "6) Camera send captured image " << std::endl;
-	std::cout << "7) Camera ADC setting " << std::endl;
+	std::cout << "7) Camera send packed data " << std::endl;
+	std::cout << "8) Camera ADC setting " << std::endl;
 	std::cout << "x) Back to previous menu" << std::endl;
 }
 

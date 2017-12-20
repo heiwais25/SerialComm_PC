@@ -30,6 +30,7 @@ public:
 
 	void CheckEchoTest();
 	void CollectImageData(void);
+	void CollectPackedImageData(void);
 
 	void ShowTestOptions(void);
 	void ShowEchoTestOptions(void);

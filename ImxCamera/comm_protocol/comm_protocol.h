@@ -14,7 +14,8 @@ private:
 	unsigned long crc32_table[256];
 };
 
-const int kPacketDataSize = 4096 - 11;
+//const int kPacketDataSize = 4096 - 11;
+const int kPacketDataSize = 1024 * 5 - 11;
 const BYTE kStx = 0x02;
 const BYTE kEtx = 0x03;
 const BYTE kSlaveId = 0x01; // It can be changed if there are one more slave
@@ -73,9 +74,6 @@ const enum DeviceCommand {
 	CAMERA_SET_CDS_GAIN,
 	CAMERA_SET_VGA_GAIN,
 	CAMERA_SET_BLACK_LEVEL,
-
-	
-
-
+	CAMERA_SEND_PACKED_DATA,
 };
 
