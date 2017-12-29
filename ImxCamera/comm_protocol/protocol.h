@@ -34,7 +34,7 @@ public:
 
 	void GetPacket(WORD read_from_device);
 
-	void set_hSendingPacket_with_data(BYTE packet_number, BYTE command, WORD length, BYTE * data);
+	void set_hSendingPacket_with_data(WORD packet_number, BYTE command, WORD length, BYTE * data);
 
 	void SendPacket(void);
 	void SendCommand(BYTE command);

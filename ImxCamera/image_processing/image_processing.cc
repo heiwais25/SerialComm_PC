@@ -21,11 +21,87 @@ ImageProcessing::~ImageProcessing() {
 	1) Default : including sensor black area at each side
 	2) Modified : excluding sensor black area
 */
+
+/*===============================================================================================================================================================================================================================================================
+
+Name:			UnpackImageData
+
+Description:	
+
+Parameters:		void
+
+Returns:
+
+Date:			2017-12-29
+
+===============================================================================================================================================================================================================================================================*/
+void ImageProcessing::UnpackImageData(void) {
+	int flag_even_odd = 0;
+	int pixel_count = -1;
+	char check_one_pixel = 0;
+	int count = 0;
+	int unpacked_image_length = collected_image_total_length_ % 3 == 0 ? (collected_image_total_length_ * 4) / 3 :
+											((collected_image_total_length_ - 2) * 4) / 3 + 2;
+	for (int i = 0; i < unpacked_image_length; i++) {
+		if (check_one_pixel % 2 == 0) {
+			check_one_pixel = 0;
+			pixel_count++;
+			flag_even_odd = pixel_count % 2 == 0 ? 0 : 1;
+		}
+		if (flag_even_odd) { // odd
+			image_buffer_[i] = check_one_pixel ? collected_image_buffer_[count++] : (collected_image_buffer_[count - 2] & 0x0f) << 4;
+		}
+		else { // even
+			image_buffer_[i] = check_one_pixel ? collected_image_buffer_[count++] : collected_image_buffer_[count++] & 0xf0;
+		}
+		check_one_pixel++;
+	}
+}
+
+
+/*===============================================================================================================================================================================================================================================================
+
+Name:			ImageModification
+
+Description:	Depending on the image type, it will modify collected image format to original version(8bit)
+
+Parameters:		void
+
+Returns:
+
+Date:			2017-12-29
+
+===============================================================================================================================================================================================================================================================*/
+void ImageProcessing::ImageModification(void) {
+	int image_buffer_size = 0;
+	switch (collected_image_type_)
+	{
+		case RAW_IMAGE_FORMAT:
+			memcpy(image_buffer_, &collected_image_buffer_[0], collected_image_total_length_);
+			// Anything to do
+			break;
+
+		case PACKED_RAW_IMAGE_FORMAT:
+			UnpackImageData();
+			break;
+
+		case PACKED_PNG_IMAGE_FORMAT:
+			image_buffer_size = collected_image_total_length_;
+			DecodeImageData(collected_image_buffer_, image_buffer_size);
+			collected_image_total_length_ = image_buffer_size;
+			UnpackImageData();
+			break;
+
+		default:
+			break;
+	}
+	std::cout << "Image modification finished" << std::endl;
+}
+
 void ImageProcessing::ChooseImageProcessOption(void) {
 	BYTE c;
 	ShowImageProcessOptions();
 	while (1) {
-
 		c = GetOneCharKeyboardInput();
 		if (c == 'x' || c == 'X') {
 			initImageProcessOption();
@@ -36,32 +112,32 @@ void ImageProcessing::ChooseImageProcessOption(void) {
 		if (isDecimalNumber(c)) {
 			switch (c)
 			{
-			case '1':
-				SaveInBitmapImage(DEFAULT_IMAGE);
-				break;
+				case '1':
+					SaveInBitmapImage(RAW_IMAGE);
+					break;
 
-			case '2':
-				SaveInBitmapImage(MODIFIED_IMAGE);
-				break;
+				case '2':
+					SaveInBitmapImage(MODIFIED_IMAGE);
+					break;
 
-			case '3':
-				SaveInRawFormat(DEFAULT_IMAGE);
-				break;
+				case '3':
+					SaveInRawFormat(RAW_IMAGE);
+					break;
 
-			case '4':
-				SaveInRawFormat(MODIFIED_IMAGE);
-				break;
+				case '4':
+					SaveInRawFormat(MODIFIED_IMAGE);
+					break;
 
-			case '5':
-				PlotInPython();
-				break;
+				case '5':
+					PlotInPython();
+					break;
 
-			case '6':
-				SaveInNumpyFormat();
-				break;
+				case '6':
+					SaveInNumpyFormat();
+					break;
 
-			default:
-				break;
+				default:
+					break;
 			}
 		}
 	}
@@ -145,7 +221,7 @@ void ImageProcessing::fill_bmp_image_data_(ImageType type) {
 	BYTE pixel_value;
 	BYTE * pImgData;
 
-	if (type == DEFAULT_IMAGE)
+	if (type == RAW_IMAGE)
 		pImgData = image_buffer_;
 	else
 		pImgData = modified_image_buffer_;
@@ -168,7 +244,7 @@ void ImageProcessing::fill_bmp_image_data_(ImageType type) {
 
 // Set bmp header array depending on the user setting following bmp structures
 void ImageProcessing::set_bmp_header_(void) {
-	int offset_value = 4 - (image_width_ * 3) % 4;
+	int offset_value = ((image_width_ * 3) % 4) ? 4 - (image_width_ * 3) % 4 : 0;
 	bmp_file_size_ = (image_width_ * 3 + offset_value) * image_height_ + kBmpHeaderSize;
 
 	// Set total file size
@@ -199,7 +275,7 @@ Returns:		(int)start offset of invalid image region
 
 ===============================================================================================================================================================================================================================================================*/
 int ImageProcessing::GetBlackLineStartPoint(void) {
-	set_image_size_(DEFAULT_IMAGE);
+	set_image_size_(RAW_IMAGE);
 	
 	bool kIsBlackLine = false;
 	int black_pixel_count = 0;
@@ -385,11 +461,37 @@ void ImageProcessing::ShowImageProcessOptions(void) {
 	std::cout << "x) Go to previous menu" << std::endl;
 }
 
-/*
-	It will make the image array by assembling the image parts from the device
-*/
+
+void ImageProcessing::SetImageTotalLength(unsigned int image_total_length) {
+	collected_image_total_length_ = image_total_length;
+}
+
+void ImageProcessing::SetImageType(CollectedImageFormat type) {
+	collected_image_type_ = type;
+}
+
+/*===============================================================================================================================================================================================================================================================
+
+Name:				AssembleImageData
+
+Description:		It will make the image array by assembling the image parts from the device
+
+Parameters:			BYTE * image_source 
+					WORD image_length
+
+Returns:			void
+
+Date:				2017-12-29
+
+===============================================================================================================================================================================================================================================================*/
 void ImageProcessing::AssembleImageData(BYTE * image_source, WORD image_length) {
-	memcpy(image_buffer_ + image_buffer_count_, image_source, image_length);
+	if (collected_image_total_length_ == 0) {
+		std::cout << "Please set image total length first" << std::endl;
+		return;
+	}
+	std::vector<BYTE> temp_vec(&image_source[0], &image_source[image_length]);
+	collected_image_buffer_.insert(collected_image_buffer_.end(), temp_vec.begin(), temp_vec.end());
+	//memcpy(collected_image_buffer_ + image_buffer_count_, image_source, image_length);
 	image_buffer_count_ += image_length;
 }
 
@@ -428,7 +530,7 @@ void ImageProcessing::write_raw_data_to_file(ImageType type) {
 
 	const char * pRawData;
 	unsigned int image_size;
-	if (type == DEFAULT_IMAGE) {
+	if (type == RAW_IMAGE) {
 		pRawData = (const char *)image_buffer_;
 		image_size = default_raw_data_size_;
 	}
@@ -447,7 +549,8 @@ void ImageProcessing::write_raw_data_to_file(ImageType type) {
 	Checking whether the assembling image pieces from device finish or not
 */
 BYTE ImageProcessing::isAssembleCompleted() {
-	if (image_buffer_count_ == default_raw_data_size_)
+	//if (image_buffer_count_ == default_raw_data_size_)
+	if (image_buffer_count_ == collected_image_total_length_)
 		return true;
 	else
 		return false;

@@ -98,13 +98,14 @@ void Protocol::Reading(void) {
 }
 
  // Set packet information required to send packet to device
-void Protocol::set_hSendingPacket_with_data(BYTE packet_number, BYTE command, WORD length, BYTE * data) {
+void Protocol::set_hSendingPacket_with_data(WORD packet_number, BYTE command, WORD length, BYTE * data) {
 	if (length > kPacketDataSize) {
 		SplitLine();
 		std::cerr << "Packet data size exceed the maximum packet data size " << length << " > " << kPacketDataSize << std::endl;
 		throw PacketDataLengthError{};
 	}
-	hSendingPacket.number = packet_number;
+	hSendingPacket.number[0] = packet_number & 0Xff;
+	hSendingPacket.number[1] = packet_number >> 8;
 	hSendingPacket.command = command;
 	hSendingPacket.length[0] = length & 0xff;
 	hSendingPacket.length[1] = length >> 8;
@@ -143,17 +144,19 @@ void Protocol::SendPacket(void) {
 void Protocol::SendPacketHeader(void) { 
 	// Send packet header(STX ~ COMMAND)
 	checksum_ = kChecksumStandardValue;
-	BYTE packet_number = hSendingPacket.number;
+	BYTE packet_number_0 = hSendingPacket.number[0];
+	BYTE packet_number_1 = hSendingPacket.number[1];
 	BYTE packet_command = hSendingPacket.command;
-	BYTE packet_piece[4] = { kStx , kSlaveId , packet_number , packet_command };
+	BYTE packet_piece[5] = { kStx , kSlaveId , packet_number_0, packet_number_1, packet_command};
 
 	pUart->Write(kStx);
 	pUart->Write(kSlaveId);
-	pUart->Write(packet_number);
+	pUart->Write(packet_number_0);
+	pUart->Write(packet_number_1);
 	pUart->Write(packet_command);
 
 	// Calculate Crc32
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < sizeof(packet_piece); i++) {
 		checksum_ = pCrc32->UpdateCrc32(checksum_, packet_piece[i]);
 	}
 }
@@ -212,8 +215,13 @@ void Protocol::GetPacket(WORD read_from_device) {
 			packet_parsing_count_++;
 			break;
 
-		case PACKET_NUMBER:
-			hReceivedPacket.number = packet_piece;
+		case PACKET_NUMBER_1:
+			hReceivedPacket.number[0] = packet_piece;
+			packet_parsing_count_++;
+			break;
+
+		case PACKET_NUMBER_2:
+			hReceivedPacket.number[1] = packet_piece;
 			packet_parsing_count_++;
 			break;
 

@@ -4,9 +4,12 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <algorithm>
 #include "utility.h"
-#include "python_plot.h"
 
+#include "python_plot.h"
+#include "png_converter.h"
+#include "png.h"
 // Question:
 // 1. 꼭 정해진 resolution에서만 해야 하는가?
 
@@ -60,8 +63,14 @@ const BYTE kaBmpHeader[] =
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
 const enum ImageType {
-	DEFAULT_IMAGE = 0,
+	RAW_IMAGE = 0,
 	MODIFIED_IMAGE = 1,
+};
+
+const enum CollectedImageFormat {
+	RAW_IMAGE_FORMAT = 0,
+	PACKED_RAW_IMAGE_FORMAT = 1,
+	PACKED_PNG_IMAGE_FORMAT = 2,
 };
 
 const enum ImageProcessOptionList {
@@ -75,10 +84,12 @@ const enum ImageProcessOptionList {
 
 class ImageProcessing {
 	public:
-		ImageProcessing() 
+		ImageProcessing()
 			:default_raw_data_size_(kCsiHorizontalResolution * kCsiVerticalResolution),
 			image_buffer_count_(0),
-			modified_raw_data_size_(0)
+			modified_raw_data_size_(0),
+			collected_image_total_length_(0),
+			collected_image_type_(RAW_IMAGE_FORMAT)
 		{
 			memcpy(bmp_header_, kaBmpHeader, sizeof(kaBmpHeader));
 			original_width_ = kCsiHorizontalResolution / 2;
@@ -100,11 +111,17 @@ class ImageProcessing {
 		void write_bmp_to_file(void);
 		void write_raw_data_to_file(ImageType type);
 
+		void ImageModification(void);
+		void UnpackImageData(void);
+
 		void ChooseImageProcessOption(void);
 		void ShowImageProcessOptions(void);
 
 		void SaveInRawFormat(ImageType type);
 		void SaveInBitmapImage(ImageType tpye);
+
+		void SetImageTotalLength(unsigned int image_total_length);
+		void SetImageType(CollectedImageFormat type);
 
 		// It needs to be replaced by python extension code
 		void PlotInPython(void);
@@ -132,7 +149,9 @@ class ImageProcessing {
 		PythonPlot * pPythonPlot_;
 
 		// Array containing default raw image data(2bytes per pixel)
-		BYTE image_buffer_[kImageBufferSize]; 
+		std::vector<BYTE> collected_image_buffer_;
+		BYTE image_buffer_[kImageBufferSize];
+
 		// Array containing modified raw image data excluding black and gray side(2bytes per pixel)
 		BYTE modified_image_buffer_[kImageBufferSize]; 
 
@@ -155,6 +174,9 @@ class ImageProcessing {
 
 		unsigned int original_width_;
 		unsigned int original_height_;
+
+		unsigned int collected_image_total_length_;
+		CollectedImageFormat collected_image_type_;
 
 		int invalid_pixel_offset_;
 };

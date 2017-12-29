@@ -15,7 +15,7 @@ private:
 };
 
 //const int kPacketDataSize = 4096 - 11;
-const int kPacketDataSize = 1024 * 5 - 11;
+const int kPacketDataSize = 1024 * 5 - 12;
 const BYTE kStx = 0x02;
 const BYTE kEtx = 0x03;
 const BYTE kSlaveId = 0x01; // It can be changed if there are one more slave
@@ -23,10 +23,10 @@ const unsigned long kCrc32Param = 0xEDB88320L;
 const unsigned long kChecksumStandardValue = 0xffffffff;
 
 typedef struct _Packet {
-	_Packet() :number(1), command(0xff), length{ 0 }, data{ 0 } {};
+	_Packet() :number{ 0 }, command(0xff), length{ 0 }, data{ 0 } {};
 	BYTE stx;					// 1byte
 	BYTE slave_id;				// 1byte
-	BYTE number;				// 1byte
+	BYTE number[2];				// 1byte
 	BYTE command;				// 1byte
 	BYTE length[2];				// 2byte
 	BYTE data[kPacketDataSize]; // item detail transferred to board
@@ -43,7 +43,8 @@ const enum ReceiveStatus {
 const enum PacketCount {
 	PACKET_STX = 0,
 	PACKET_SLAVE_ID,
-	PACKET_NUMBER,
+	PACKET_NUMBER_1,
+	PACKET_NUMBER_2,
 	PACKET_COMMAND,
 	PACKET_LENGTH_1,
 	PACKET_LENGTH_2,
@@ -75,5 +76,8 @@ const enum DeviceCommand {
 	CAMERA_SET_VGA_GAIN,
 	CAMERA_SET_BLACK_LEVEL,
 	CAMERA_SEND_PACKED_DATA,
+
+	CAMERA_SEND_PNG = 21,
+
 };
 

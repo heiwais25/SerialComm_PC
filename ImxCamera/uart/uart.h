@@ -6,11 +6,8 @@
 #include <exception>
 #include <stdexcept>
 #include <typeinfo>
-
-#include "serial_communication.h"
 #include "uart_params.h"
-
-
+#include "../serial_communication.h"
 
 class Uart : SerialCommunication
 {

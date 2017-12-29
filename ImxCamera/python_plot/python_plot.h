@@ -1,9 +1,9 @@
 #pragma once
 #include <Windows.h>
-#include <Python.h>
-#include <arrayobject.h>
-#include <ndarrayobject.h>
-#include <npy_common.h>
+#include "Python.h"
+#include "arrayobject.h"
+#include "ndarrayobject.h"
+#include "npy_common.h"
 #include "utility.h"
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION

@@ -95,17 +95,26 @@ void DeviceController::ChooseCameraTestOption(void) {
 		CameraCaptureWithExposure();
 		break;
 
+	
 	case '6':
+		pImageProcessing_->SetImageType(RAW_IMAGE_FORMAT);
 		SendCommand(CAMERA_SEND_CAPTURED_IMAGE);
 		break;
 
 	case '7':
+		pImageProcessing_->SetImageType(PACKED_RAW_IMAGE_FORMAT);
 		SendCommand(CAMERA_SEND_PACKED_DATA);
 		break;
 
 	case '8':
+		pImageProcessing_->SetImageType(PACKED_PNG_IMAGE_FORMAT);
+		SendCommand(CAMERA_SEND_PNG);
+		break;
+
+	case '9':
 		SetCameraGainOption();
 		break;
+
 	}
 }
 
@@ -180,13 +189,23 @@ void DeviceController::DoCommand(void) {
 			CheckEchoTest();
 			break;
 
+		/*case CAMERA_SEND_IMAGE:
+			CollectImageData();*/
+
+
 		case CAMERA_SEND_CAPTURED_IMAGE: // Because the image packet is seperated, we need to collect this image pieces
+		case CAMERA_SEND_PACKED_DATA:
+		case CAMERA_SEND_PNG:
 			CollectImageData();
 			break;
 
-		case CAMERA_SEND_PACKED_DATA:
-			CollectPackedImageData();
-			break;
+		
+			//CollectPackedImageData();
+			//break;
+
+		
+			////CollectPNGImageData();
+			//break;
 
 		default:
 			printf("%x\n", hReceivedPacket.command);
@@ -214,21 +233,38 @@ void DeviceController::CheckEchoTest() {
 			3) If the transmission is finished, processing image else request next frame
 	This function will be continued until the image transmission is finished
 */
-void DeviceController::CollectImageData() {
-
-	if (image_piece_number_ != hReceivedPacket.number)
-		std::cerr << "The order of data is packet is wr ong" << std::endl;
+void DeviceController::CollectImageData(void) {
+	// 1. Get packet number
+	unsigned short packet_number = (hReceivedPacket.number[1] << 8) + hReceivedPacket.number[0];
+	if (image_piece_number_ != packet_number) {
+		std::cerr << "The order of data is packet is wrong" << std::endl;
+		// ERROR HANDLING WHEN THE DATA IS CRASHED
+		return;
+	}
 	else
 		image_piece_number_++;
 
-	// send this data to image processing class
-	pImageProcessing_->AssembleImageData(hReceivedPacket.data, received_packet_data_length);
+	// First packet will include image information
+	if (packet_number == 0) {
+		BYTE * data = hReceivedPacket.data;
+		unsigned int data_total_length = (data[3] << 24) + (data[2] << 16) + (data[1] << 8) + data[0];
+		pImageProcessing_->SetImageTotalLength(data_total_length);
+		std::cout << data_total_length << " bytes will be transmitted" << std::endl;
+	}
 
+	// 2. Just collect image data
+	else {
+		pImageProcessing_->AssembleImageData(hReceivedPacket.data, received_packet_data_length);
+	}
+
+	// 3. If collection is finished, transform image data
 	if (pImageProcessing_->isAssembleCompleted()) {
+		pImageProcessing_->ImageModification();
 		pImageProcessing_->ChooseImageProcessOption();
+		pImageProcessing_->SetImageTotalLength(0);
 		image_piece_number_ = 0;
 	}
-	else  
+	else
 		SendCommand(CAMERA_SEND_NEXT_PACKET);
 }
 
@@ -248,8 +284,9 @@ Date:			2017-12-20
 
 ===============================================================================================================================================================================================================================================================*/
 void DeviceController::CollectPackedImageData(void) {
-	if (image_piece_number_ != hReceivedPacket.number)
-		std::cerr << "The order of data is packet is wr ong" << std::endl;
+	unsigned short packet_number = (hReceivedPacket.number[1] << 8) + hReceivedPacket.number[0];
+	if (image_piece_number_ != packet_number)
+		std::cerr << "The order of data is packet is wrong" << std::endl;
 	else
 		image_piece_number_++;
 
@@ -367,7 +404,7 @@ void DeviceController::ShowCameraTestOption() {
 	std::cout << "5) Camera capture image with long exposure" << std::endl;
 	std::cout << "6) Camera send captured image " << std::endl;
 	std::cout << "7) Camera send packed data " << std::endl;
-	std::cout << "8) Camera ADC setting " << std::endl;
+	std::cout << "8) convert packed data to png format" << std::endl;
 	std::cout << "x) Back to previous menu" << std::endl;
 }
 

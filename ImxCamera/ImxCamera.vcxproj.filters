@@ -51,6 +51,9 @@
     <ClInclude Include="python_plot\python_plot.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="png\png_converter.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -81,6 +84,9 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="python_plot\python_plot.cc">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="png\png_coverter.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

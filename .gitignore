@@ -261,3 +261,5 @@ __pycache__/
 *.pyc
 *.bmp
 /ImxCamera/output
+/ImxCamera/LibPng.dll
+/ImxCamera/LibZ.dll

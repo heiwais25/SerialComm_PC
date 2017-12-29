@@ -5,7 +5,7 @@
 
 class DeviceController :public Protocol {
 public:
-	DeviceController(Uart * user_hUart) :Protocol(user_hUart), image_piece_number_(1) {
+	DeviceController(Uart * user_hUart) :Protocol(user_hUart), image_piece_number_(0) {
 		pImageProcessing_ = new ImageProcessing();
 		
 	};
@@ -31,6 +31,8 @@ public:
 	void CheckEchoTest();
 	void CollectImageData(void);
 	void CollectPackedImageData(void);
+	void CollectPNGImageData(void);
+
 
 	void ShowTestOptions(void);
 	void ShowEchoTestOptions(void);
@@ -41,7 +43,7 @@ public:
 
 private:
 
-	BYTE image_piece_number_;
+	WORD image_piece_number_;
 	WORD received_packet_data_length;
 	ImageProcessing * pImageProcessing_;
 	
