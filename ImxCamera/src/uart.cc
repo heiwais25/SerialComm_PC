@@ -1,35 +1,23 @@
 #include "stdafx.h"
 #include "uart.h"
 
-
-Uart::Uart()
-{
-	isClosedPort = 1;
-}
-
-
-Uart::~Uart()
-{
-}
-
 void Uart::OpenPort(std::string port_number) {
 	try {
 		ChoosePort(port_number);
-		set_serial_params();
-		set_timeouts();
+		SetSerialParams();
+		SetTimeOuts();
 	}
 	catch (const ClosedPortError& e) {
 		std::cerr << "Port is closed, please open the port ahead and try again" << std::endl;
 		exit(1);
 	}
 	catch (...) {
-
 		std::cerr << "Error in opening port" << std::endl;
 		exit(1);
 	}
 }
 
-void Uart::ClosedPort(HANDLE opend_port) {
+void Uart::ClosePort(HANDLE opend_port) {
 	if (!CloseHandle(opend_port))
 		throw ClosingPortError{};
 	isClosedPort = 1;
@@ -71,7 +59,7 @@ void Uart::ChoosePort(std::string port_number) {
 	isClosedPort = 0;
 }
 
-void Uart::set_serial_params(UartParams user_params) {
+void Uart::SetSerialParams(UartParams user_params) {
 	if (isClosedPort) {
 		throw ClosedPortError{};
 	}
@@ -89,7 +77,7 @@ void Uart::set_serial_params(UartParams user_params) {
 		throw SetCommStateError{};
 }
 
-void Uart::set_timeouts(TimeoutsParams user_timeouts) {
+void Uart::SetTimeOuts(TimeoutsParams user_timeouts) {
 	if (isClosedPort) {
 		throw ClosedPortError{};
 	}

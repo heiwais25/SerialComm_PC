@@ -1,15 +1,26 @@
 #pragma once
-#include "protocol.h"
+#include "packet_protocol.h"
 #include "image_processing.h"
+#include "utility.h"
+
+const enum CAMERA_PARAMS {
+	CDS_GAIN = 0,
+	VGA_GAIN,
+	BLACK_LEVEL,
+	EXPOSRUE_TIME,
+};
 
 
-class DeviceController :public Protocol {
+class DeviceController : public PacketProtocol {
 public:
-	DeviceController(Uart * user_hUart) :Protocol(user_hUart), image_piece_number_(0) {
+	DeviceController(Uart * user_hUart) : PacketProtocol(user_hUart), image_piece_number_(0) {
 		pImageProcessing_ = new ImageProcessing();
-		
 	};
-	~DeviceController();
+
+	DeviceController(std::string port_number) : PacketProtocol(port_number), image_piece_number_(0) {
+		pImageProcessing_ = new ImageProcessing();
+	};
+	~DeviceController() {};
 
 	virtual void PickAndSendCommand(void);
 	
@@ -20,12 +31,16 @@ public:
 	void ChooseCameraTestOption(void);
 	void CameraCaptureWithExposure(void);
 
+	void SetCameraParamsValue(void);
+
+
 	void SetCameraGainOption(void);
 	void ChooseGainSettingOption(void);
 	void SetCDSGain(void);
 	void SetVGAGain(void);
 	void SetBlackLevel(void);
-	
+	void SetExposureTime(void);
+
 	virtual void DoCommand(void);
 
 	void CheckEchoTest();
@@ -45,6 +60,7 @@ private:
 
 	WORD image_piece_number_;
 	WORD received_packet_data_length;
+	
 	ImageProcessing * pImageProcessing_;
 	
 };

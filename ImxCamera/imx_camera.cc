@@ -22,20 +22,15 @@ void ChooseCommMode(void);
 void UnitTest_ImageProcessing(void);
 
 
-int main()
-{
+int main() {
 	int mode = 2; // 1 : Image Processing Test // 2 : Communication with board
 	if (mode == 1) {
 		while (1)
 			UnitTest_ImageProcessing(); 
 	}
 	else {
-		Uart * pUart = new Uart();
-		std::string port_number = "COM6";
-		pUart->OpenPort(port_number);
-
-		Protocol * hController = new DeviceController(pUart);
-
+		std::string port_number = "COM4";
+		PacketProtocol * hController = new DeviceController(port_number);
 
 		//// Choose whether start communicate or other option
 		ChooseCommMode();

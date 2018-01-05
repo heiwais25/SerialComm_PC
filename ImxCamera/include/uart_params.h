@@ -1,9 +1,10 @@
 #pragma once
+#ifndef __UART_PARAM__
+#define __UART_PARAM__
 #include <iostream>
 #include <Windows.h>
 
 const WORD kNoData = 0xFFFF;
-
 struct UartParams {
 	UartParams() :BaudRate(115200), ByteSize(8), StopBits(ONESTOPBIT), Parity(NOPARITY) {};
 
@@ -13,7 +14,6 @@ struct UartParams {
 		StopBits = this->StopBits + right.StopBits;
 		Parity = this->Parity + right.Parity;
 	}
-
 	DWORD BaudRate;
 	BYTE ByteSize;
 	BYTE StopBits;
@@ -33,3 +33,4 @@ struct TimeoutsParams {
 
 const UartParams default_serial_params;
 const TimeoutsParams default_timeouts;
+#endif

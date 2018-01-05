@@ -1,21 +1,16 @@
 #include "stdafx.h"
 #include "device_controller.h"
-DeviceController::~DeviceController(void) {
 
-}
-
-/*----------------------------------------------------------------------------------------------------------
-
-Main stream
-
-----------------------------------------------------------------------------------------------------------*/
 void DeviceController::PickAndSendCommand(void) {
 	BYTE c;
 	ShowTestOptions();
 	while (1) {
 		if (c = GetOneCharKeyboardInput()) {
-			if (c == 'x')break;
+			if (c == 'x')
+				break;
+
 			ControlDevice(c);
+
 			if (isWaitResponse()) 
 				break; // It sends command, so let's wait for its response
 		}
@@ -31,7 +26,8 @@ Sending operation
 	Depending on user input, it will send command or do some process
 */
 void DeviceController::ControlDevice(BYTE c) {
-	init_comm_state();
+	// init_comm_state();
+	IndicatePacketState(PACKET_EMPTY);
 	switch (c) {
 		case '1':
 			EchoTest();
@@ -42,6 +38,7 @@ void DeviceController::ControlDevice(BYTE c) {
 			break;
 
 		case '3':
+			// In future?
 			break;
 	}
 }
@@ -57,7 +54,7 @@ void DeviceController::EchoTest() {
 		if (c = GetOneCharKeyboardInput())
 			break;
 	}
-	set_hSendingPacket_with_data(0x00, ECHO_TEST, 0x01, &c);
+	SetSendingPacketInfo(0x00, ECHO_TEST, 0x01, &c);
 	SendPacket();
 }
 
@@ -77,44 +74,36 @@ void DeviceController::ChooseCameraTestOption(void) {
 			break;
 	}
 	switch (c) {
-	case '1':
-		SendCommand(CAMERA_POWER_ON);
-		break;
-	case '2':
-		SendCommand(CAMERA_POWER_OFF);
-		break;
-	case '3':
-		SendCommand(CAMERA_SHOW_GAIN_SETTING);
-		break;
+		case '1':
+			SendCommand(CAMERA_POWER_ON);
+			break;
 
-	case '4':
-		SendCommand(CAMERA_CAPTURE);
-		break;
+		case '2':
+			SendCommand(CAMERA_POWER_OFF);
+			break;
 
-	case '5':
-		CameraCaptureWithExposure();
-		break;
+		case '3':
+			SendCommand(CAMERA_CAPTURE);
+			break;
 
-	
-	case '6':
-		pImageProcessing_->SetImageType(RAW_IMAGE_FORMAT);
-		SendCommand(CAMERA_SEND_CAPTURED_IMAGE);
-		break;
+		case '4':
+			pImageProcessing_->SetImageType(RAW_IMAGE_FORMAT);
+			SendCommand(CAMERA_SEND_CAPTURED_IMAGE);
+			break;
 
-	case '7':
-		pImageProcessing_->SetImageType(PACKED_RAW_IMAGE_FORMAT);
-		SendCommand(CAMERA_SEND_PACKED_DATA);
-		break;
+		case '5':
+			pImageProcessing_->SetImageType(PACKED_RAW_IMAGE_FORMAT);
+			SendCommand(CAMERA_SEND_PACKED_DATA);
+			break;
 
-	case '8':
-		pImageProcessing_->SetImageType(PACKED_PNG_IMAGE_FORMAT);
-		SendCommand(CAMERA_SEND_PNG);
-		break;
+		case '6':
+			pImageProcessing_->SetImageType(PACKED_PNG_IMAGE_FORMAT);
+			SendCommand(CAMERA_SEND_PNG);
+			break;
 
-	case '9':
-		SetCameraGainOption();
-		break;
-
+		case '7':
+			SetCameraGainOption();
+			break;
 	}
 }
 
@@ -132,7 +121,7 @@ void DeviceController::CameraCaptureWithExposure(void) {
 			break;
 		}
 	}
-	set_hSendingPacket_with_data(0x00, CAMERA_CAPTURE_LONG_EXPOSURE, 0x01, &c);
+	SetSendingPacketInfo(0x00, CAMERA_CAPTURE_LONG_EXPOSURE, 0x01, &c);
 	SendPacket();
 }
 
@@ -160,6 +149,10 @@ void DeviceController::ChooseGainSettingOption(void) {
 			SetBlackLevel();
 			break;
 		
+		case '4':
+			SetExposureTime();
+			break;
+
 		case 'x':
 			std::cout << "Exit choosing gain setting option" << std::endl;
 			break;
@@ -189,23 +182,11 @@ void DeviceController::DoCommand(void) {
 			CheckEchoTest();
 			break;
 
-		/*case CAMERA_SEND_IMAGE:
-			CollectImageData();*/
-
-
 		case CAMERA_SEND_CAPTURED_IMAGE: // Because the image packet is seperated, we need to collect this image pieces
 		case CAMERA_SEND_PACKED_DATA:
 		case CAMERA_SEND_PNG:
 			CollectImageData();
 			break;
-
-		
-			//CollectPackedImageData();
-			//break;
-
-		
-			////CollectPNGImageData();
-			//break;
 
 		default:
 			printf("%x\n", hReceivedPacket.command);
@@ -236,7 +217,10 @@ void DeviceController::CheckEchoTest() {
 void DeviceController::CollectImageData(void) {
 	// 1. Get packet number
 	unsigned short packet_number = (hReceivedPacket.number[1] << 8) + hReceivedPacket.number[0];
+	static unsigned int data_total_length = 0;
+	static unsigned int received_total_length_ = 0;
 	if (image_piece_number_ != packet_number) {
+
 		std::cerr << "The order of data is packet is wrong" << std::endl;
 		// ERROR HANDLING WHEN THE DATA IS CRASHED
 		return;
@@ -247,9 +231,9 @@ void DeviceController::CollectImageData(void) {
 	// First packet will include image information
 	if (packet_number == 0) {
 		BYTE * data = hReceivedPacket.data;
-		unsigned int data_total_length = (data[3] << 24) + (data[2] << 16) + (data[1] << 8) + data[0];
+		data_total_length = (data[3] << 24) + (data[2] << 16) + (data[1] << 8) + data[0];
 		pImageProcessing_->SetImageTotalLength(data_total_length);
-		std::cout << data_total_length << " bytes will be transmitted" << std::endl;
+		system("cls");
 	}
 
 	// 2. Just collect image data
@@ -261,69 +245,40 @@ void DeviceController::CollectImageData(void) {
 	if (pImageProcessing_->isAssembleCompleted()) {
 		pImageProcessing_->ImageModification();
 		pImageProcessing_->ChooseImageProcessOption();
-		pImageProcessing_->SetImageTotalLength(0);
-		image_piece_number_ = 0;
+		pImageProcessing_->InitImageBuffer();
+		image_piece_number_ = received_total_length_ = 0;
+		system("cls");
+		return;
 	}
-	else
+	else {
+		received_total_length_ += received_packet_data_length;
+		std::cout << std::fixed;
+		std::cout.precision(2);
+		std::cout << ((double)(packet_number * kPacketDataSize) / (double)data_total_length)  * 100. << "%" << std::endl;
+		DrawPercentageArrow(received_total_length_, data_total_length);
 		SendCommand(CAMERA_SEND_NEXT_PACKET);
+	}
 }
 
 
 /*===============================================================================================================================================================================================================================================================
 
-Name:			CollectPackedImageData
+Name:				SetCameraParamsValue
 
-Description:	When device send packed data(2pixel in 3bytes), we need to unpack first and collect them in image buffer
-				This function will do unpacking and send them to image process class to make full image
+Description:		It will set camera params including cds, vga, black level and exposure time
 
-Parameters:		void
+Parameters:			void
 
-Returns:
+Returns:			void
 
-Date:			2017-12-20
+Date:				2018-01-02
 
 ===============================================================================================================================================================================================================================================================*/
-void DeviceController::CollectPackedImageData(void) {
-	unsigned short packet_number = (hReceivedPacket.number[1] << 8) + hReceivedPacket.number[0];
-	if (image_piece_number_ != packet_number)
-		std::cerr << "The order of data is packet is wrong" << std::endl;
-	else
-		image_piece_number_++;
+void DeviceController::SetCameraParamsValue(void) {
 
-	BYTE image_buffer[(kPacketDataSize * 4) / 3];
-	
-	// Because the packed data is 3n or 3n-1, we need to deal with them seperately
-	int unpacked_data_length = received_packet_data_length % 3 == 0 ? (received_packet_data_length * 4) / 3 : \
-																	((received_packet_data_length - 2) * 4) / 3 + 2;
-	int flag_even_odd = 0;
-	int pixel_count = -1;
-	char check_one_pixel = 0;
-	int count = 0;
-	for (int i = 0; i < unpacked_data_length; i++) {
-		if (check_one_pixel % 2 == 0) {
-			check_one_pixel = 0;
-			pixel_count++;
-			flag_even_odd = pixel_count % 2 == 0 ? 0 : 1;
-		}
-		if (flag_even_odd) { // odd
-			image_buffer[i] = check_one_pixel ? hReceivedPacket.data[count++] : (hReceivedPacket.data[count - 2] & 0x0f) << 4;
-		}
-		else { // even
-			image_buffer[i] = check_one_pixel ? hReceivedPacket.data[count++] : hReceivedPacket.data[count++] & 0xf0;
-		}
-		check_one_pixel++;
-	}
-
-	// send this data to image processing class
-	pImageProcessing_->AssembleImageData(image_buffer, unpacked_data_length);
-
-	if (pImageProcessing_->isAssembleCompleted()) {
-		pImageProcessing_->ChooseImageProcessOption();
-		image_piece_number_ = 0;
-	}
-	else
-		SendCommand(CAMERA_SEND_NEXT_PACKET);
 }
+
+
 
 /*
 	Set CDS Gain value which will be affecting to analog gain(0dB ~ 18dB)
@@ -344,7 +299,7 @@ void DeviceController::SetCDSGain(void) {
 			}
 		}
 	}
-	set_hSendingPacket_with_data(0x00, CAMERA_SET_CDS_GAIN, 0x01, &c);
+	SetSendingPacketInfo(0x00, CAMERA_SET_CDS_GAIN, 0x01, &c);
 	SendPacket();
 }
 
@@ -357,7 +312,7 @@ void DeviceController::SetVGAGain(void) {
 	unsigned char value[2];
 	value[0] = setting_value & 0xff;
 	value[1] = (setting_value >> 8) & 0xff;
-	set_hSendingPacket_with_data(0x00, CAMERA_SET_VGA_GAIN, 0x02, value);
+	SetSendingPacketInfo(0x00, CAMERA_SET_VGA_GAIN, 0x02, value);
 	SendPacket();
 }
 
@@ -370,9 +325,20 @@ void DeviceController::SetBlackLevel(void) {
 	unsigned char value[2];
 	value[0] = setting_value & 0xff;
 	value[1] = (setting_value >> 8) & 0xff;
-	set_hSendingPacket_with_data(0x00, CAMERA_SET_BLACK_LEVEL, 0x02, value);
+	SetSendingPacketInfo(0x00, CAMERA_SET_BLACK_LEVEL, 0x02, value);
 	SendPacket();
 }
+
+void DeviceController::SetExposureTime(void) {
+	std::cout << "Set Exposure Time (default is 1 : 1/30s)" << std::endl;
+	int setting_value = getValueLowerThanMaximum(3000);
+	unsigned char value[2];
+	value[0] = setting_value & 0xff;
+	value[1] = (setting_value >> 8) & 0xff;
+	SetSendingPacketInfo(0x00, CAMERA_SET_EXPOSURE_TIME, 0x02, value);
+	SendPacket();
+}
+
 
 /*===================================================================================================================
 
@@ -399,12 +365,11 @@ void DeviceController::ShowCameraTestOption() {
 	std::cout << "Which camera option do you want to do" << std::endl;
 	std::cout << "1) Camera power on" << std::endl;
 	std::cout << "2) Camera power off" << std::endl;
-	std::cout << "3) Show camera current gain setting" << std::endl;
-	std::cout << "4) Camera capture image" << std::endl;
-	std::cout << "5) Camera capture image with long exposure" << std::endl;
-	std::cout << "6) Camera send captured image " << std::endl;
-	std::cout << "7) Camera send packed data " << std::endl;
-	std::cout << "8) convert packed data to png format" << std::endl;
+	std::cout << "3) Camera capture image" << std::endl;
+	std::cout << "4) Camera send captured image " << std::endl;
+	std::cout << "5) Camera send packed data " << std::endl;
+	std::cout << "6) convert packed data to png format" << std::endl;
+	std::cout << "7) Camera parameter setting" << std::endl;
 	std::cout << "x) Back to previous menu" << std::endl;
 }
 
@@ -422,6 +387,7 @@ void DeviceController::ShowGainSettingOption() {
 	std::cout << "1) Set CDS Gain" << std::endl;
 	std::cout << "2) Set VGA Gain" << std::endl;
 	std::cout << "3) Set Black Level" << std::endl;
+	std::cout << "4) Set Exposure Time" << std::endl;
 	std::cout << "x) Back to previous menu" << std::endl;
 
 }

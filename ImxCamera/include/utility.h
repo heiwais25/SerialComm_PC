@@ -4,7 +4,7 @@
 #include <iostream>
 #include <map>
 #include <ctime>
-
+#include <vector>
 
 BYTE GetOneCharKeyboardInput(void);
 
@@ -20,8 +20,11 @@ int toDecimalNumber(BYTE c);
 int getCurrentDayHourMinuteSec();
 
 int getValueLowerThanMaximum(int maximum_value);
+
+int DrawPercentageArrow(int parts_length, int total_length);
+
 // Color code table
-enum AnsiColorCode {
+const enum AnsiColorCode {
 	ANSI_DEFAULT = 0,
 	ANSI_BOLD = 1,
 	ANSI_RED = 31,
@@ -31,7 +34,7 @@ enum AnsiColorCode {
 	ANSI_WHITE = 37,
 };
 
-enum CmdColorCode {
+const enum CmdColorCode {
 	CMD_DEFAULT = 0,
 	CMD_BLUE = 1,
 	CMD_GREEN = 2,

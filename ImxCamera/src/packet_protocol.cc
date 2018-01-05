@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "protocol.h"
+#include "packet_protocol.h"
 
 /* Protocol.cc
 - The basic action 
@@ -19,49 +19,52 @@
 	- Also we can send packet to make device do depending on the command
 	- "PickAndSendCommand" function need to be re-definned by inheritted class
 
-- To write Packet to device, you can use "SendPacket()" after using "set_hSendingPacket_with_data()" function
-	Order : 1)"set_hSendingPacket_with_data()" 2) "SendPacket()"
+- To write Packet to device, you can use "SendPacket()" after using "SetSendingPacketInfo()" function
+	Order : 1)"SetSendingPacketInfo()" 2) "SendPacket()"
 	- If you want to send just command, use "SendCommand()" with your specific command
 
 	2017-10-14 JongHyun */
 
-Protocol::Protocol(Uart * user_hUart){
+PacketProtocol::PacketProtocol(Uart * user_hUart){
 	pUart = user_hUart;
 	pCrc32 = new Crc32();
-	init_protocol();
+	//InitPacketProtocol();
+	InitPacketParams();
 }
 
-Protocol::~Protocol(){
+PacketProtocol::PacketProtocol(std::string port_number) {
+	pUart = new Uart();
+	pUart->OpenPort(port_number);
+	pCrc32 = new Crc32();
+	//InitPacketProtocol();
+	InitPacketParams();
 }
 
 
-
-void Protocol::init_protocol() {
-	kIsPacket_ = 0;						
-	kIsFinishReceivePacket_ = 0;			
-	packet_parsing_count_ = PACKET_STX;  
-	
-	kIsPacketIncludeInfo_ = 0; 
-	checksum_ = kChecksumStandardValue; 
+PacketProtocol::~PacketProtocol(){
 }
+
+
 
 // The basic action : read or write (just charactor or packet)
-void Protocol::StandByMode(void) {
+void PacketProtocol::StandByMode(void) {
 	while (1) {
-		Reading();
+		ScanPort();
 		PickAndSendCommand();
 	}
 }
 
-void Protocol::Reading(void) {
-	WORD read_from_device;
+// When there are signal at the port, scan the value
+void PacketProtocol::ScanPort(void) {
+	WORD data_from_device;
 	BYTE user_input;
-	const BYTE kCommandKey = '`';
 	ReceiveStatus slave_status;
 
+	const BYTE kCommandKey = '`';
+
 	while (1) {
-		read_from_device = pUart->Read();
-		slave_status = CheckReceivedPacket(read_from_device);
+		data_from_device = pUart->Read();
+		slave_status = CheckReceivedPacket(data_from_device);
 
 		if(slave_status == SLAVE_SLEEP){ 
 			if (user_input = GetOneCharKeyboardInput()) {
@@ -70,12 +73,11 @@ void Protocol::Reading(void) {
 			}
 		}
 		else if(slave_status == SLAVE_NORMAL_CHARACTOR){
-			ReadColorFont(static_cast<BYTE>(read_from_device));
-			//std::cout << static_cast<BYTE>(read_from_device);
+			ReadColorFont(static_cast<BYTE>(data_from_device));
 		}
 		else if (slave_status == SLAVE_COMMAND) {
 			try {
-				GetPacket(read_from_device);
+				GetPacket(data_from_device);
 			}
 			catch (PacketDataLengthError& e) {
 				std::cerr << "Packet data length error" << std::endl;
@@ -91,14 +93,15 @@ void Protocol::Reading(void) {
 			}
 			if (kIsFinishReceivePacket_) {
 				DoCommand(); // It will be written in the inheritted class
-				init_protocol();
+				//InitPacketProtocol();
+				InitPacketParams();
 			}
 		}
 	}
 }
 
  // Set packet information required to send packet to device
-void Protocol::set_hSendingPacket_with_data(WORD packet_number, BYTE command, WORD length, BYTE * data) {
+void PacketProtocol::SetSendingPacketInfo(WORD packet_number, BYTE command, WORD length, BYTE * data) {
 	if (length > kPacketDataSize) {
 		SplitLine();
 		std::cerr << "Packet data size exceed the maximum packet data size " << length << " > " << kPacketDataSize << std::endl;
@@ -110,15 +113,16 @@ void Protocol::set_hSendingPacket_with_data(WORD packet_number, BYTE command, WO
 	hSendingPacket.length[0] = length & 0xff;
 	hSendingPacket.length[1] = length >> 8;
 	memcpy(hSendingPacket.data, data, length);
-	set_ready_comm_State();
+	IndicatePacketState(PACKET_FILLED);
 }
 
-void Protocol::SendCommand(BYTE command) {
-	set_hSendingPacket_with_data(0x01, command, 0x00, NULL);
+// Send only command
+void PacketProtocol::SendCommand(BYTE command) {
+	SetSendingPacketInfo(0x01, command, 0x00, NULL);
 	SendPacket();
 }
 
-void Protocol::SendPacket(void) {
+void PacketProtocol::SendPacket(void) {
 	// 1. send packet header
 	// 2. send packet data
 	// 3. send packet tail
@@ -136,12 +140,12 @@ void Protocol::SendPacket(void) {
 	
 	SendPacketHeader();
 	SendPacketData();
-	SendPacketTail();
+	SendPacketFooter();
 }
 
 
 // Need to set number, command
-void Protocol::SendPacketHeader(void) { 
+void PacketProtocol::SendPacketHeader(void) {
 	// Send packet header(STX ~ COMMAND)
 	checksum_ = kChecksumStandardValue;
 	BYTE packet_number_0 = hSendingPacket.number[0];
@@ -156,13 +160,13 @@ void Protocol::SendPacketHeader(void) {
 	pUart->Write(packet_command);
 
 	// Calculate Crc32
-	for (int i = 0; i < sizeof(packet_piece); i++) {
+	for (int i = 0; i < sizeof(packet_piece); i++) 
 		checksum_ = pCrc32->UpdateCrc32(checksum_, packet_piece[i]);
-	}
+	
 }
 
 // Need to set length, data
-void Protocol::SendPacketData(void) {
+void PacketProtocol::SendPacketData(void) {
 	// Send packet data
 	int sending_data_count = 0;
 	BYTE packet_length_0 = hSendingPacket.length[0];
@@ -183,7 +187,7 @@ void Protocol::SendPacketData(void) {
 		}
 }
 
-void Protocol::SendPacketTail(void) {
+void PacketProtocol::SendPacketFooter(void) {
 	// Send packet tail
 	calculated_checksum_ = checksum_ ^ kChecksumStandardValue;
 	pUart->Write(static_cast<BYTE>(calculated_checksum_ & 0xff));
@@ -196,15 +200,14 @@ void Protocol::SendPacketTail(void) {
 // 1. Forming Packet structure
 // 2. Check valid packet
 // 3. If valid, do command(나누는 게 낫지않나?)
-void Protocol::GetPacket(WORD read_from_device) {
+void PacketProtocol::GetPacket(WORD read_from_device) {
 	BYTE packet_piece = static_cast<BYTE> (read_from_device);
-
 	checksum_ = pCrc32->UpdateCrc32(checksum_, packet_piece);
 	switch (packet_parsing_count_) { 
 		case PACKET_STX:
 			if (packet_piece == kStx) {
+				InitPacketParams(); // init data count, checksum count and value 
 				kIsPacket_ = 1;
-				init_packet_parameter(); // init data count, checksum count and value 
 				checksum_ = pCrc32->UpdateCrc32(checksum_, packet_piece);
 				packet_parsing_count_++;
 			}
@@ -266,28 +269,43 @@ void Protocol::GetPacket(WORD read_from_device) {
 	}
 }
 
-void Protocol::init_packet_parameter(void) {
+//void PacketProtocol::InitPacketProtocol() {
+//	kIsPacket_ = 0;
+//	kIsFinishReceivePacket_ = 0;
+//	packet_parsing_count_ = PACKET_STX;
+//	kIsPacketFilled_ = PACKET_EMPTY;
+//	checksum_ = kChecksumStandardValue;
+//}
+
+void PacketProtocol::InitPacketParams(void) {
 	checksum_ = kChecksumStandardValue;
 	packet_checksum_count_ = 0;
 	packet_data_count_ = 0;
+	kIsPacketFilled_ = PACKET_EMPTY;
+	kIsPacket_ = 0;
+	kIsFinishReceivePacket_ = 0;
+	packet_parsing_count_ = PACKET_STX;
 }
 
-void Protocol::init_comm_state(void) {
-	kIsPacketIncludeInfo_ = 0;
-	kIsWaitResponse_ = 0;
+//void PacketProtocol::init_comm_state(void) {
+//	kIsPacketFilled_ = PACKET_EMPTY;
+//	//kIsWaitResponse_ = 0;
+//}
+
+// Inidicate the latest packed is filled with data which means it can be transmitted
+void PacketProtocol::IndicatePacketState(SENDING_PACKET_STATE state) {
+	kIsPacketFilled_ = state;
+	kIsWaitResponse_ = state ? WAITING : NOT_WATING;
 }
 
-void Protocol::set_ready_comm_State(void) {
-	kIsPacketIncludeInfo_ = 1;
-	kIsWaitResponse_ = 1;
-}
-
-void Protocol::CheckPacketLength(void) {
+// Check the packet length is within the range
+void PacketProtocol::CheckPacketLength(void) {
 	packet_checksum_count_ = 0;
 	if (received_data_length_ > kPacketDataSize) {
 		throw PacketDataLengthError{};
 	}
-	else if (received_data_length_ == 0) { // No data : command packet
+	
+	if (received_data_length_ == 0) { // No data : command packet
 		calculated_checksum_ = checksum_ ^ kChecksumStandardValue;
 		packet_parsing_count_ = PACKET_CHECKSUM_1;
 	}
@@ -296,25 +314,22 @@ void Protocol::CheckPacketLength(void) {
 	}
 }
 
-void Protocol::CheckPacketChecksumAndEtx(void) {
-
+void PacketProtocol::CheckPacketChecksumAndEtx(void) {
+	BYTE * checksum = &hReceivedPacket.checksum[0];
 	if (hReceivedPacket.etx == kEtx) { // Correct packet
-		received_checksum_ = (hReceivedPacket.checksum[3] << 24) + (hReceivedPacket.checksum[2] << 16) +
-			(hReceivedPacket.checksum[1] << 8) + (hReceivedPacket.checksum[0]);
-		if (calculated_checksum_ == received_checksum_) { // Wrong Checksum
+		received_checksum_ = (checksum[3] << 24) + (checksum[2] << 16) +
+								(checksum[1] << 8) + (checksum[0]);
+		if (calculated_checksum_ == received_checksum_)  // Wrong Checksum
 			return;
-		}
-		else {
+		else 
 			throw PacketChecksumError{};
-		}
 	}
-	else { // Bad packet structure
+	else  // Bad packet structure
 		throw PacketEtxError{};
-	}
 }
 
 // Check received word whether it is packet data or just charactor
-ReceiveStatus Protocol::CheckReceivedPacket(WORD word_from_device) {
+ReceiveStatus PacketProtocol::CheckReceivedPacket(WORD word_from_device) {
 	if (word_from_device == kNoData)
 		return SLAVE_SLEEP;
 	else if (kIsPacket_ || kStx == (BYTE)word_from_device)

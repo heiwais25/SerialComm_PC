@@ -1,7 +1,8 @@
 #pragma once
 #include <Windows.h>
-class SerialCommunication
-{
+
+// The basic function will be Write and read
+class SerialCommunication {
 	public:
 		SerialCommunication();
 		~SerialCommunication();

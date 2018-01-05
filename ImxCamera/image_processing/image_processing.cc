@@ -5,7 +5,6 @@
 
 
 ImageProcessing::~ImageProcessing() {
-
 }
 
 /*----------------------------------------------------------------------------------------------------------
@@ -215,7 +214,8 @@ void ImageProcessing::fill_bmp_image_data_(ImageType type) {
 
 	// Offset need to inserted to the end of each horizontal line to make the number of horizontal bytes to be multiplies of 4
 	// If total horizontal bytes are 4542, we need to add 2 to make 4546 which is multiplies of 4
-	int offset_value = ((image_width_ * 3) % 4) ? 4 - (image_width_ * 3) % 4 : 0;
+	//int offset_value = ((image_width_ * 3) % 4) ? 4 - (image_width_ * 3) % 4 : 0;
+	int offset_value = (image_width_ % 4) ? 4 - (image_width_) % 4 : 0;
 	int offset_count = 0;
 
 	BYTE pixel_value;
@@ -227,13 +227,20 @@ void ImageProcessing::fill_bmp_image_data_(ImageType type) {
 		pImgData = modified_image_buffer_;
 
 	int image_count = kBmpHeaderSize;
+
+	// Fill first format of b/w image
+	for (int i = 0; i < 256; i++) {
+		bmp_image_data_[image_count++] = (unsigned char)i;
+		bmp_image_data_[image_count++] = (unsigned char)i;
+		bmp_image_data_[image_count++] = (unsigned char)i;
+		bmp_image_data_[image_count++] = (unsigned char)0;
+	}
+
 	for (unsigned int vertical_count = 0; vertical_count < image_height_; vertical_count++) {
 		for (unsigned int horizontal_count = 0; horizontal_count < image_width_; horizontal_count++) {
 			pixel_value = pImgData[horizontal_count * 2 + vertical_count * image_width_ * 2 + 1];
 			bmp_image_data_[image_count + offset_count] = pixel_value;
-			bmp_image_data_[image_count + offset_count + 1] = pixel_value;
-			bmp_image_data_[image_count + offset_count + 2] = pixel_value;
-			image_count += 3; // Fill 3 pixel with same value every interation
+			image_count += 1; // Fill 3 pixel with same value every interation
 		}
 		for (int i = 0; i < offset_value; i++) {
 			bmp_image_data_[image_count + offset_count] = 0x00;
@@ -244,8 +251,8 @@ void ImageProcessing::fill_bmp_image_data_(ImageType type) {
 
 // Set bmp header array depending on the user setting following bmp structures
 void ImageProcessing::set_bmp_header_(void) {
-	int offset_value = ((image_width_ * 3) % 4) ? 4 - (image_width_ * 3) % 4 : 0;
-	bmp_file_size_ = (image_width_ * 3 + offset_value) * image_height_ + kBmpHeaderSize;
+	int offset_value = (image_width_ % 4) ? 4 - (image_width_ * 3) % 4 : 0;
+	bmp_file_size_ = (image_width_ + offset_value) * image_height_ + kBmpHeaderSize + 1024;
 
 	// Set total file size
 	bmp_header_[2] = static_cast<BYTE>(bmp_file_size_);
@@ -285,6 +292,7 @@ int ImageProcessing::GetBlackLineStartPoint(void) {
 
 	for (int hi = 0; hi < original_image_width; hi++) {
 		BYTE high_byte = image_buffer_[hi * 2 + sample_vi * original_image_width + 1];
+		//if (high_byte < 0x5) { // 0x5 : Proper value indicating black(invalid) pixel
 		if (high_byte < 0x5) { // 0x5 : Proper value indicating black(invalid) pixel
 			kIsBlackLine = true;
 			black_pixel_count++;
@@ -292,8 +300,10 @@ int ImageProcessing::GetBlackLineStartPoint(void) {
 
 		if (kIsBlackLine && high_byte >= 0x5) {
 			kIsBlackLine = false;
-			if (black_pixel_count == kBlackPixelWidth) {
-				black_pixel_start_pixel = hi - kBlackPixelWidth;
+			if (black_pixel_count == kBlackPixelWidth - 1) {
+				// Sometime, the last pixel value in black line is larger than 0x5
+				// Because first 20 pixel value should be 0, so it is okay to check first 20 pixels
+				black_pixel_start_pixel = hi + 1 - kBlackPixelWidth;
 				break;
 			}
 			else {
@@ -339,6 +349,7 @@ Returns:
 int ImageProcessing::GetChoppedImageOffset() {
 	int start_offset = (invalid_pixel_offset_ + kCenterBlackLine) * 2;
 	if (start_offset / 2 > original_width_) {
+		std::cout << "Calculated offset is " << start_offset << std::endl;
 		std::cout << "Error on getting chopped image offset" << std::endl;
 		return -1;
 	}
@@ -464,6 +475,11 @@ void ImageProcessing::ShowImageProcessOptions(void) {
 
 void ImageProcessing::SetImageTotalLength(unsigned int image_total_length) {
 	collected_image_total_length_ = image_total_length;
+}
+
+void ImageProcessing::InitImageBuffer() {
+	SetImageTotalLength(0);
+	collected_image_buffer_.clear();
 }
 
 void ImageProcessing::SetImageType(CollectedImageFormat type) {
