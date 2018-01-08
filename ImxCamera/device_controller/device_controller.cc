@@ -62,18 +62,19 @@ void DeviceController::EchoTest() {
 	Do camera test including taking picture and some gain setting
 */
 void DeviceController::CameraTest(void) {
-	ShowCameraTestOption();
-	ChooseCameraTestOption();
+	ShowCameraOperationOption();
+	ChooseCameraOperation();
 }
 
-void DeviceController::ChooseCameraTestOption(void) {
+void DeviceController::DoControlCamera(void) {
+	ShowControlCameraOption();
 	BYTE c;
 	while (1) {
-		c = GetOneCharKeyboardInput();
-		if (isDecimalNumber(c))
+		if (c = GetOneCharKeyboardInput())
 			break;
 	}
-	switch (c) {
+	switch (c)
+	{
 		case '1':
 			SendCommand(CAMERA_POWER_ON);
 			break;
@@ -87,24 +88,147 @@ void DeviceController::ChooseCameraTestOption(void) {
 			break;
 
 		case '4':
-			pImageProcessing_->SetImageType(RAW_IMAGE_FORMAT);
+			SetCameraGainOption();
+			break;
+
+		case 'x':
+			break;
+
+		default:
+			break;
+	}
+}
+
+void DeviceController::DoImageTransmission(void) {
+	ShowImageTransmissionOption();
+	BYTE c;
+	while (1) {
+		if (c = GetOneCharKeyboardInput())
+			break;
+	}
+	switch (c)
+	{
+		case '1':
+			//pImageProcessing_->SetImageType(RAW_IMAGE_FORMAT);
 			SendCommand(CAMERA_SEND_CAPTURED_IMAGE);
 			break;
 
-		case '5':
-			pImageProcessing_->SetImageType(PACKED_RAW_IMAGE_FORMAT);
+		case '2':
+			//pImageProcessing_->SetImageType(PACKED_RAW_IMAGE_FORMAT);
 			SendCommand(CAMERA_SEND_PACKED_DATA);
 			break;
 
-		case '6':
-			pImageProcessing_->SetImageType(PACKED_PNG_IMAGE_FORMAT);
+		case '3':
+			//pImageProcessing_->SetImageType(PACKED_PNG_IMAGE_FORMAT);
 			SendCommand(CAMERA_SEND_PNG);
 			break;
 
-		case '7':
-			SetCameraGainOption();
+		case '4':
+			SendCommand(COMMAND_CAMERA_SEND_LAST_ACTIVATED_MODE);
+			break;
+
+		case 'x':
+			break;
+
+		default:
 			break;
 	}
+}
+
+/*===============================================================================================================================================================================================================================================================
+
+Name			:	DoImageProcess
+
+Description		:	
+
+Parameters		:	
+
+Returns			:	void
+
+Date			:	
+
+===============================================================================================================================================================================================================================================================*/
+void DeviceController::DoImageProcess(void) {
+	
+	ShowImageProcessOption();
+	BYTE c;
+	while (1) {
+		if (c = GetOneCharKeyboardInput())
+			break;
+	}
+	switch (c)
+	{
+		case '1':
+			SendCommand(PACK_IMAGE);
+			break;
+
+		case '2':
+			SendCommand(PACK_CONVERT_PNG);
+			break;
+
+		case '3':
+			SendCommand(SAVE_IMAGE);
+			break;
+
+		case '4':
+			SetImageToRead();
+			break;
+
+		case '5':
+			SendCommand(SHOW_STORED_IMAGE_LIST);
+			break;
+
+		case '6':
+			SendCommand(DELETE_LAST_NODE);
+			break;
+
+		case 'x':
+			break;
+
+		default:
+			break;
+	}
+}
+
+
+void DeviceController::ChooseCameraOperation(void) {
+	/*
+		It will choose operation mode among 3 main operaion modes
+		1. Control camera
+		2. Image transmission
+		3. Image process
+	*/
+	BYTE c;
+	while (1) {
+		if (c = GetOneCharKeyboardInput())
+			break;
+	}
+	switch (c) {
+		case '1':
+			DoControlCamera();
+			break;
+
+		case '2':
+			DoImageTransmission();
+			break;
+
+		case '3':
+			DoImageProcess();
+			break;
+
+		case 'x':
+			return;
+	}
+}
+
+void DeviceController::SetImageToRead() {
+	std::cout << "Select the position of image stored at EMMC" << std::endl;
+	int setting_value = getValueLowerThanMaximum(1024);
+	unsigned char value[2];
+	value[0] = setting_value & 0xff;
+	value[1] = (setting_value >> 8) & 0xff;
+	SetSendingPacketInfo(0x00, READ_IMAGE, 0x02, value);
+	SendPacket();
 }
 
 void DeviceController::CameraCaptureWithExposure(void) {
@@ -155,7 +279,7 @@ void DeviceController::ChooseGainSettingOption(void) {
 
 		case 'x':
 			std::cout << "Exit choosing gain setting option" << std::endl;
-			break;
+			return;
 
 		default:
 			break;
@@ -232,6 +356,17 @@ void DeviceController::CollectImageData(void) {
 	if (packet_number == 0) {
 		BYTE * data = hReceivedPacket.data;
 		data_total_length = (data[3] << 24) + (data[2] << 16) + (data[1] << 8) + data[0];
+
+		CollectedImageFormat img_format;
+		int raw_total_length = kCsiHorizontalResolution * kCsiVerticalResolution;
+		if (data_total_length == raw_total_length)
+			img_format = RAW_IMAGE_FORMAT;
+		else if (data_total_length == raw_total_length * 3 / 4)
+			img_format = PACKED_RAW_IMAGE_FORMAT;
+		else
+			img_format = PACKED_PNG_IMAGE_FORMAT;
+		pImageProcessing_->SetImageType(img_format);
+
 		pImageProcessing_->SetImageTotalLength(data_total_length);
 		system("cls");
 	}
@@ -360,17 +495,12 @@ void DeviceController::ShowEchoTestOptions() {
 	std::cout << "Enter one charactor" << std::endl;
 }
 
-void DeviceController::ShowCameraTestOption() {
+void DeviceController::ShowCameraOperationOption() {
 	SplitLine();
 	std::cout << "Which camera option do you want to do" << std::endl;
-	std::cout << "1) Camera power on" << std::endl;
-	std::cout << "2) Camera power off" << std::endl;
-	std::cout << "3) Camera capture image" << std::endl;
-	std::cout << "4) Camera send captured image " << std::endl;
-	std::cout << "5) Camera send packed data " << std::endl;
-	std::cout << "6) convert packed data to png format" << std::endl;
-	std::cout << "7) Camera parameter setting" << std::endl;
-	std::cout << "x) Back to previous menu" << std::endl;
+	std::cout << "1) Control camera" << std::endl;
+	std::cout << "2) Image Transmission" << std::endl;
+	std::cout << "3) Image process" << std::endl;
 }
 
 void DeviceController::ShowExposureOption(void) {
@@ -403,3 +533,33 @@ void DeviceController::ShowCDSOption(void) {
 	std::cout << "6) 15dB" << std::endl;
 	std::cout << "7) 18dB" << std::endl;
 }
+
+void DeviceController::ShowControlCameraOption(void) {
+	SplitLine();
+	std::cout << "1) Camera Power On" << std::endl;
+	std::cout << "2) Camera Power Off" << std::endl;
+	std::cout << "3) Camera capture image" << std::endl;
+	std::cout << "4) Camera set camera option" << std::endl;
+	std::cout << "x) Go to previous menu" << std::endl;
+}
+
+void DeviceController::ShowImageTransmissionOption(void) {
+	SplitLine();
+	std::cout << "1) Send raw image format" << std::endl;
+	std::cout << "2) Send packed image format" << std::endl;
+	std::cout << "3) Send packed png format" << std::endl;
+	std::cout << "4) Send last activated mode" << std::endl;
+	std::cout << "x) Go to previous menu" << std::endl;
+}
+
+void DeviceController::ShowImageProcessOption(void) {
+	SplitLine();
+	std::cout << "1) Pack raw image data" << std::endl;
+	std::cout << "2) Convert packed image to png " << std::endl;
+	std::cout << "3) Save image data to emmc" << std::endl;
+	std::cout << "4) Read image data from emmc" << std::endl;
+	std::cout << "5) Show stored image list" << std::endl;
+	std::cout << "6) Delete last node" << std::endl;
+	std::cout << "x) Go to previous menu" << std::endl;
+}
+

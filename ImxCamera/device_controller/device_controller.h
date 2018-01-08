@@ -28,7 +28,7 @@ public:
 	void EchoTest(void);
 
 	void CameraTest();
-	void ChooseCameraTestOption(void);
+	void ChooseCameraOperation(void);
 	void CameraCaptureWithExposure(void);
 
 	void SetCameraParamsValue(void);
@@ -40,6 +40,7 @@ public:
 	void SetVGAGain(void);
 	void SetBlackLevel(void);
 	void SetExposureTime(void);
+	void SetImageToRead(void);
 
 	virtual void DoCommand(void);
 
@@ -49,12 +50,21 @@ public:
 	void CollectPNGImageData(void);
 
 
+
+	void DoControlCamera(void);
+	void DoImageTransmission(void);
+	void DoImageProcess(void);
+
 	void ShowTestOptions(void);
 	void ShowEchoTestOptions(void);
-	void ShowCameraTestOption(void);
+	void ShowCameraOperationOption(void);
 	void ShowExposureOption(void);
 	void ShowGainSettingOption(void);
 	void ShowCDSOption(void);
+	void ShowControlCameraOption(void);
+	void ShowImageTransmissionOption(void);
+	void ShowImageProcessOption(void);
+
 
 private:
 

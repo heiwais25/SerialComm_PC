@@ -82,6 +82,7 @@ int getValueLowerThanMaximum(int maximum_value) {
 			std::cin.ignore();
 			continue;
 		}
+
 		if (output <= maximum_value) 
 			return output;
 		else 
