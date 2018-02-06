@@ -72,7 +72,10 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);C:\Program Files\Anaconda3\include</IncludePath>
+    <IncludePath>E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\lib;$(IncludePath)</IncludePath>
+    <ExecutablePath>E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\lib;$(ExecutablePath)</ExecutablePath>
+    <LibraryPath>E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\lib;$(LibraryPath)</LibraryPath>
+    <ReferencePath>E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\lib;$(ReferencePath)</ReferencePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -80,6 +83,10 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <ExecutablePath>E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\lib;$(ExecutablePath)</ExecutablePath>
+    <LibraryPath>E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\lib;$(LibraryPath)</LibraryPath>
+    <ReferencePath>E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\lib;$(ReferencePath)</ReferencePath>
+    <IncludePath>E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\lib;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -95,6 +102,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4819</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>C:\Users\heiwa\AppData\Local\Programs\Python\Python36-32\Lib\site-packages\numpy\core\include\numpy;C:\Users\heiwa\AppData\Local\Programs\Python\Python36-32\include;E:\WorkingArea\sdk\LibZ\include\LibZ;E:\WorkingArea\sdk\LibPng\include\LibPng;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\python_plot;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\png;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\image_processing;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\device_controller;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\include;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -127,7 +135,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\include;C:\Users\heiwa\AppData\Local\Programs\Python\Python36-32\Lib\site-packages\numpy\core\include\numpy;C:\Users\heiwa\AppData\Local\Programs\Python\Python36-32\include;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera;E:\WorkingArea\sdk\LibZ\include\LibZ;E:\WorkingArea\sdk\LibPng\include\LibPng;E:\WorkingArea\sdk\LibZ\include;E:\WorkingArea\sdk\LibPng\include;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\utility;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\uart;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\python_plot;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\png;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\image_processing;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\device_controller;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\comm_protocol;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\heiwa\AppData\Local\Programs\Python\Python36-32\Lib\site-packages\numpy\core\include\numpy;C:\Users\heiwa\AppData\Local\Programs\Python\Python36-32\include;E:\WorkingArea\sdk\LibZ\include\LibZ;E:\WorkingArea\sdk\LibPng\include\LibPng;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\python_plot;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\png;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\image_processing;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\device_controller;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\include;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>

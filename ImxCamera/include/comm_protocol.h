@@ -87,8 +87,10 @@ const enum DeviceCommand {
 	DELETE_LAST_NODE,
 	CAMERA_CAPTURE_LONG_EXPOSURE, // Need to wait
 	
-
-	
+	// LED_CONTROL(50~60)
+	TURN_ON_LED = 50,
+	TURN_OFF_LED,
+	BLANK_LED,
 
 	
 	

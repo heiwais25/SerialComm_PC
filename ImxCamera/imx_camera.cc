@@ -70,7 +70,7 @@ void UnitTest_ImageProcessing(void) {
 	//std::string raw_file_name = "output/1414_3756";
 	//std::string raw_file_name = "output/2008_5124";
 	//std::string raw_file_name = "output/1420_0736";
-	std::string raw_file_name = "output/1814_4627";
+	std::string raw_file_name = "output/2521_4646";
 	ImageProcessing * pImgProcessing = new ImageProcessing();
 	pImgProcessing->ReadImageData(raw_file_name);
 	std::cout << std::endl;

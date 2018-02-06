@@ -34,7 +34,7 @@ const int kRightGray = 41;
 const int kLeftGray = 16;
 
 
-
+const int kBlakcPixelVariation = 10;
 
 // New version
 const int kCenterBlackLine = 56;
@@ -89,7 +89,8 @@ class ImageProcessing {
 			image_buffer_count_(0),
 			modified_raw_data_size_(0),
 			collected_image_total_length_(0),
-			collected_image_type_(RAW_IMAGE_FORMAT)
+			collected_image_type_(RAW_IMAGE_FORMAT),
+			minimum_value_(255)
 		{
 			memcpy(bmp_header_, kaBmpHeader, sizeof(kaBmpHeader));
 			original_width_ = kCsiHorizontalResolution / 2;
@@ -178,6 +179,6 @@ class ImageProcessing {
 
 		unsigned int collected_image_total_length_;
 		CollectedImageFormat collected_image_type_;
-
+		BYTE minimum_value_;
 		int invalid_pixel_offset_;
 };

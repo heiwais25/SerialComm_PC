@@ -54,6 +54,12 @@ public:
 	void DoControlCamera(void);
 	void DoImageTransmission(void);
 	void DoImageProcess(void);
+	void DoControlLED(void);
+
+	void ShowLEDOption(void);
+	void TurnOnLED(void);
+	void TurnOffLED(void);
+	void BlankLED(void);
 
 	void ShowTestOptions(void);
 	void ShowEchoTestOptions(void);

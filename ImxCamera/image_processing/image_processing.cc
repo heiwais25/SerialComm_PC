@@ -290,15 +290,28 @@ int ImageProcessing::GetBlackLineStartPoint(void) {
 	int black_pixel_start_pixel;
 	int sample_vi = 400;
 
+	minimum_value_ = 255;
 	for (int hi = 0; hi < original_image_width; hi++) {
 		BYTE high_byte = image_buffer_[hi * 2 + sample_vi * original_image_width + 1];
-		//if (high_byte < 0x5) { // 0x5 : Proper value indicating black(invalid) pixel
-		if (high_byte < 0x5) { // 0x5 : Proper value indicating black(invalid) pixel
+
+		if (high_byte < minimum_value_) {
+			minimum_value_ = high_byte;
+		}
+	}
+	std::cout << "Minimum valueat at 400th vertical line : " << (int)minimum_value_ << std::endl;
+
+	for (int hi = 0; hi < original_image_width; hi++) {
+		BYTE high_byte = image_buffer_[hi * 2 + sample_vi * original_image_width + 1];
+		if (high_byte < minimum_value_ + kBlakcPixelVariation) { // 0x5 : Proper value indicating black(invalid) pixel
+			printf("%d %x\n", hi, high_byte);
 			kIsBlackLine = true;
 			black_pixel_count++;
 		}
 
-		if (kIsBlackLine && high_byte >= 0x5) {
+	
+
+		//if (kIsBlackLine && high_byte >= 0x20) {
+		if (kIsBlackLine && black_pixel_count == 20) {
 			kIsBlackLine = false;
 			if (black_pixel_count == kBlackPixelWidth - 1) {
 				// Sometime, the last pixel value in black line is larger than 0x5
@@ -314,6 +327,7 @@ int ImageProcessing::GetBlackLineStartPoint(void) {
 
 	// invalid_pixel_offset_ : Offset of gray+black pixel
 	invalid_pixel_offset_ = black_pixel_start_pixel - kLeftGrayPixelWidth;
+	std::cout << "Invalid pixel offset : " << invalid_pixel_offset_ << std::endl;
 	return black_pixel_start_pixel;
 }
 
@@ -330,7 +344,7 @@ Returns:		(int) height
 ===============================================================================================================================================================================================================================================================*/
 int ImageProcessing::GetBlackPixelHeightFromBottom(int horizontal_pixel) {
 	int vi = 0;
-	while (image_buffer_[horizontal_pixel + vi * kCsiHorizontalResolution + 1] > 0x5) 
+	while (image_buffer_[horizontal_pixel + vi * kCsiHorizontalResolution + 1] > minimum_value_ + kBlakcPixelVariation)
 		vi++;
 	return vi;
 }
@@ -378,8 +392,8 @@ int ImageProcessing::GetChoppedImageLength(int horizontal_offset) {
 		for (int hi = horizontal_offset; hi < original_width_ * 2; hi++) {
 			int vi = 0;
 			BYTE high_byte = image_buffer_[hi * 2 + 1];
-			if (high_byte < 0x5) {
-				while (image_buffer_[hi * 2 + 1 + vi * kCsiHorizontalResolution] < 0x5) {
+			if (high_byte < minimum_value_ + kBlakcPixelVariation) {
+				while (image_buffer_[hi * 2 + 1 + vi * kCsiHorizontalResolution] < minimum_value_ + kBlakcPixelVariation) {
 					vi++;
 				}
 				if (kIsBlackStart && vi != black_pixel_length_from_bottom) {
@@ -416,7 +430,7 @@ void ImageProcessing::ApplyCutEachSide(void) {
 	int chopped_image_horizontal_offset = GetChoppedImageOffset();
 
 	// 1. Find the vertical offset of first black line
-	int black_pixel_vertical_offset = GetBlackPixelHeightFromBottom((invalid_pixel_offset_ + kLeftGrayPixelWidth)*2);
+	int black_pixel_vertical_offset = GetBlackPixelHeightFromBottom((invalid_pixel_offset_ + 5)*2);
 
 	// 2. Calculate the vertical offset of chopped image
 	//    Usually, the difference between both line is 13
@@ -444,6 +458,7 @@ void ImageProcessing::ApplyCutEachSide(void) {
 		for (int horizontal_count = 0; horizontal_count < chopped_image_length * 2; horizontal_count++) {
 			BYTE pixel_value = image_buffer_[(chopped_image_horizontal_offset + horizontal_count) + \
 								(vertical_count + main_image_vertical_offset_bottom - 1)* kCsiHorizontalResolution];
+			//printf("%x ", pixel_value);
 			modified_image_buffer_[horizontal_count + vertical_count * image_width_ * 2] = pixel_value;
 		}
 

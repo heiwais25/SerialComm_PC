@@ -190,6 +190,44 @@ void DeviceController::DoImageProcess(void) {
 	}
 }
 
+void DeviceController::DoControlLED() {
+	ShowLEDOption();
+	BYTE c;
+	while (1) {
+		if (c = GetOneCharKeyboardInput())
+			break;
+	}
+	switch (c)
+	{
+	case '1':
+		SendCommand(TURN_ON_LED);
+		break;
+
+	case '2':
+		SendCommand(TURN_OFF_LED);
+		break;
+
+	case '3':
+		BlankLED();
+		break;
+
+	case 'x':
+		break;
+
+	default:
+		break;
+	}
+}
+
+void DeviceController::BlankLED(void) {
+	std::cout << "Blank the LED with fixed period" << std::endl;
+	int setting_value = getValueLowerThanMaximum(4095);
+	unsigned char value[2];
+	value[0] = setting_value & 0xff;
+	value[1] = (setting_value >> 8) & 0xff;
+	SetSendingPacketInfo(0x00, BLANK_LED, 0x02, value);
+	SendPacket();
+}
 
 void DeviceController::ChooseCameraOperation(void) {
 	/*
@@ -216,10 +254,16 @@ void DeviceController::ChooseCameraOperation(void) {
 			DoImageProcess();
 			break;
 
+		case '4':
+			DoControlLED();
+
 		case 'x':
 			return;
 	}
 }
+
+
+
 
 void DeviceController::SetImageToRead() {
 	std::cout << "Select the position of image stored at EMMC" << std::endl;
@@ -434,6 +478,7 @@ void DeviceController::SetCDSGain(void) {
 			}
 		}
 	}
+	c -= 1;
 	SetSendingPacketInfo(0x00, CAMERA_SET_CDS_GAIN, 0x01, &c);
 	SendPacket();
 }
@@ -456,7 +501,7 @@ void DeviceController::SetVGAGain(void) {
 */
 void DeviceController::SetBlackLevel(void) {
 	std::cout << "Set digital level as a black signal(default option : 492)" << std::endl;
-	int setting_value = getValueLowerThanMaximum(1024);
+	int setting_value = getValueLowerThanMaximum(4095);
 	unsigned char value[2];
 	value[0] = setting_value & 0xff;
 	value[1] = (setting_value >> 8) & 0xff;
@@ -501,6 +546,7 @@ void DeviceController::ShowCameraOperationOption() {
 	std::cout << "1) Control camera" << std::endl;
 	std::cout << "2) Image Transmission" << std::endl;
 	std::cout << "3) Image process" << std::endl;
+	std::cout << "4) Control LED" << std::endl;
 }
 
 void DeviceController::ShowExposureOption(void) {
@@ -563,3 +609,11 @@ void DeviceController::ShowImageProcessOption(void) {
 	std::cout << "x) Go to previous menu" << std::endl;
 }
 
+void DeviceController::ShowLEDOption(void) {
+	SplitLine();
+	std::cout << "1) Turn on the LED" << std::endl;
+	std::cout << "2) Turn off the LED" << std::endl;
+	std::cout << "3) Blank the LED" << std::endl;
+	std::cout << "x) Go to previous menu" << std::endl;
+
+}
