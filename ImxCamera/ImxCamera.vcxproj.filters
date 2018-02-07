@@ -15,46 +15,40 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="stdafx.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="serial_communication.h">
+    <ClInclude Include="src\communication\comm_protocol.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="device_controller\device_controller.h">
+    <ClInclude Include="src\communication\packet_protocol.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="image_processing\image_processing.h">
+    <ClInclude Include="src\communication\device_controller.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="python_plot\python_plot.h">
+    <ClInclude Include="src\communication\serial_communication.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="png\png_converter.h">
+    <ClInclude Include="src\communication\uart.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="include\uart.h">
+    <ClInclude Include="src\communication\uart_params.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="include\uart_params.h">
+    <ClInclude Include="src\image_processing\png_converter.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="include\utility.h">
+    <ClInclude Include="src\image_processing\image_processing.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="include\comm_protocol.h">
+    <ClInclude Include="src\python_plot\python_plot.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="include\packet_protocol.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="include\camera_gain.h">
+    <ClInclude Include="src\utility\utility.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
@@ -62,37 +56,34 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="serial_communication.cc">
+    <ClCompile Include="src\utility\utility.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="imx_camera.cc">
+    <ClCompile Include="src\communication\comm_protocol.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="device_controller\device_controller.cc">
+    <ClCompile Include="src\communication\device_controller.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="image_processing\image_processing.cc">
+    <ClCompile Include="src\communication\packet_protocol.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="python_plot\python_plot.cc">
+    <ClCompile Include="src\communication\serial_communication.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="png\png_coverter.cc">
+    <ClCompile Include="src\communication\uart.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="src\uart.cc">
+    <ClCompile Include="src\image_processing\image_processing.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="src\utility.cc">
+    <ClCompile Include="src\image_processing\png_coverter.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="src\comm_protocol.cc">
+    <ClCompile Include="src\python_plot\python_plot.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="src\packet_protocol.cc">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="src\camera_gain.cc">
+    <ClCompile Include="tests\imx_camera.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

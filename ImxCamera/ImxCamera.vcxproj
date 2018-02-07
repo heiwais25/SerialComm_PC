@@ -90,9 +90,11 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Users\heiwa\AppData\Local\Programs\Python\Python36\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;C:\Users\heiwa\AppData\Local\Programs\Python\Python36\libs</LibraryPath>
-    <LibraryWPath>$(WindowsSDK_MetadataPath);C:\Users\heiwa\AppData\Local\Programs\Python\Python36\libs</LibraryWPath>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <LibraryWPath>$(WindowsSDK_MetadataPath)</LibraryWPath>
+    <ExecutablePath>.\dll;$(ExecutablePath)</ExecutablePath>
+    <SourcePath>.\src;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -135,7 +137,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\heiwa\AppData\Local\Programs\Python\Python36-32\Lib\site-packages\numpy\core\include\numpy;C:\Users\heiwa\AppData\Local\Programs\Python\Python36-32\include;E:\WorkingArea\sdk\LibZ\include\LibZ;E:\WorkingArea\sdk\LibPng\include\LibPng;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\python_plot;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\png;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\image_processing;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\device_controller;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\include;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;.\tests;.\src\utility;.\src\python_plot;.\src\image_processing;.\src\communication;.\include;$(LibZDir)\include;$(LibPNGDir)\include;$(AnacondaDir)\Lib\site-packages\numpy\core\include\numpy;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -156,7 +158,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Program Files\Anaconda3\pkgs\numpy-1.13.3-py36ha320f96_0\Lib\site-packages\numpy\core\include\numpy;C:\Program Files\Anaconda3\include;E:\WorkingArea\sdk\LibZ\include\LibZ;E:\WorkingArea\sdk\LibPng\include\LibPng;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\utility;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\uart;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\python_plot;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\png;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\image_processing;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\device_controller;E:\WorkingArea\imxCamera\ImxCamera\ImxCamera\comm_protocol;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;.\tests;.\src\utility;.\src\python_plot;.\src\image_processing;.\include\LibZ;.\src\communication;.\include\python;.\include\LibPng;.\include\python\numpy;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -165,45 +167,40 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>python36.lib;LibZ.lib;LibPng.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>E:\WorkingArea\sdk\LibZ\lib;E:\WorkingArea\sdk\LibPng\lib;C:\Program Files\Anaconda3\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>.\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="device_controller\device_controller.h" />
-    <ClInclude Include="image_processing\image_processing.h" />
-    <ClInclude Include="include\camera_gain.h" />
-    <ClInclude Include="include\comm_protocol.h" />
-    <ClInclude Include="include\packet_protocol.h" />
-    <ClInclude Include="include\uart.h" />
-    <ClInclude Include="include\uart_params.h" />
-    <ClInclude Include="include\utility.h" />
-    <ClInclude Include="png\png_converter.h" />
-    <ClInclude Include="python_plot\python_plot.h" />
-    <ClInclude Include="serial_communication.h" />
+    <ClInclude Include="src\communication\comm_protocol.h" />
+    <ClInclude Include="src\communication\device_controller.h" />
+    <ClInclude Include="src\communication\packet_protocol.h" />
+    <ClInclude Include="src\communication\serial_communication.h" />
+    <ClInclude Include="src\communication\uart.h" />
+    <ClInclude Include="src\communication\uart_params.h" />
+    <ClInclude Include="src\image_processing\image_processing.h" />
+    <ClInclude Include="src\image_processing\png_converter.h" />
+    <ClInclude Include="src\python_plot\python_plot.h" />
+    <ClInclude Include="src\utility\utility.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="device_controller\device_controller.cc" />
-    <ClCompile Include="image_processing\image_processing.cc" />
-    <ClCompile Include="imx_camera.cc" />
-    <ClCompile Include="png\png_coverter.cc" />
-    <ClCompile Include="python_plot\python_plot.cc" />
-    <ClCompile Include="serial_communication.cc" />
-    <ClCompile Include="src\camera_gain.cc" />
-    <ClCompile Include="src\comm_protocol.cc" />
-    <ClCompile Include="src\packet_protocol.cc" />
-    <ClCompile Include="src\uart.cc" />
-    <ClCompile Include="src\utility.cc" />
+    <ClCompile Include="src\communication\comm_protocol.cc" />
+    <ClCompile Include="src\communication\device_controller.cc" />
+    <ClCompile Include="src\communication\packet_protocol.cc" />
+    <ClCompile Include="src\communication\serial_communication.cc" />
+    <ClCompile Include="src\communication\uart.cc" />
+    <ClCompile Include="src\image_processing\image_processing.cc" />
+    <ClCompile Include="src\image_processing\png_coverter.cc" />
+    <ClCompile Include="src\python_plot\python_plot.cc" />
+    <ClCompile Include="src\utility\utility.cc" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="tests\imx_camera.cc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
