@@ -6,6 +6,9 @@
 # Environment
 - It includes LibPng, LibZ, python, python/numpy header file
 - It assumes using Anaconda 64bit as a default python interpreter with matplotlib, numpy
-- To resolve QT environment, you need to set environment ahead using this package
-> 'QT_PLUGIN_PATH=$(AnacondaDir)/Library/plugins'
+- To resolve environment problem, you need to set environment ahead using this package
+'QT_PLUGIN_PATH=$(AnacondaDir)/Library/plugins'
+'PYTHONHOME'=$(AnacondaDir)'
+'PYTHONPATH'=$(AnacondaDir)/Lib'
+- If there are problem with python.dll, it is due to python version problem. You can solve this problem by copying python36.dll file from Anaconda directory
 
