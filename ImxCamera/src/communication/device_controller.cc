@@ -411,17 +411,20 @@ void DeviceController::CollectImageData(void) {
 	// First packet will include image information
 	if (packet_number == 0) {
 		BYTE * data = hReceivedPacket.data;
+
+		
 		data_total_length = (data[3] << 24) + (data[2] << 16) + (data[1] << 8) + data[0];
 
 		CollectedImageFormat img_format;
 		int raw_total_length = kCsiHorizontalResolution * kCsiVerticalResolution;
-		int cut_off_total_lentgh = (kCsiHorizontalResolution / 2 - kCenterBlackLine) * 2 * kCsiVerticalResolution;
+		int cut_off_total_lentgh = kEffectiveImageWidth * kEffectiveImageHeight * 2;
 		if (data_total_length == raw_total_length)
 			img_format = RAW_IMAGE_FORMAT;
 		else if (data_total_length == raw_total_length * 3 / 4)
 			img_format = PACKED_RAW_IMAGE_FORMAT;
-		else if (data_total_length == cut_off_total_lentgh)
+		else if (data_total_length == cut_off_total_lentgh) {
 			img_format = CUT_OFF_IMAGE_FORMAT;
+		}
 		else
 			img_format = PACKED_PNG_IMAGE_FORMAT;
 

@@ -469,7 +469,7 @@ void ImageProcessing::ApplyCutEachSide(void) {
 	for (int vertical_count = 0; vertical_count < kEffectiveImageHeight; vertical_count++) {
 		// Copy right image from invalid region first to new image buffer 
 		for (int horizontal_count = 0; horizontal_count < chopped_image_length * 2; horizontal_count++) {
-			BYTE pixel_value = image_buffer_[(chopped_image_horizontal_offset + horizontal_count) + \
+			BYTE pixel_value = image_buffer_[(chopped_image_horizontal_offset + 2 + horizontal_count) + \
 								(vertical_count + main_image_vertical_offset_bottom - 1)* kCsiHorizontalResolution];
 			//printf("%x ", pixel_value);
 			modified_image_buffer_[horizontal_count + vertical_count * image_width_ * 2] = pixel_value;
