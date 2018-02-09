@@ -82,14 +82,11 @@ void ImageProcessing::ImageModification(void) {
 
 		case CUT_OFF_IMAGE_FORMAT:
 			memcpy(image_buffer_, &collected_image_buffer_[0], collected_image_total_length_);
-			// Anything to do
 			break;
-
+			
 		case PACKED_RAW_IMAGE_FORMAT:
 			UnpackImageData();
 			break;
-
-
 
 		case PACKED_PNG_IMAGE_FORMAT:
 			image_buffer_size = collected_image_total_length_;
@@ -210,11 +207,11 @@ void ImageProcessing::set_image_size_(ImageType mode) {
 		modified_raw_data_size_ = modified_width_ * 2 * modified_height_;
 		ApplyCutEachSide();
 	}
-	else if(mode == CUT_OFF_IMAGE_FORMAT) { // default mode
-		image_width_ = modified_width_;
-		image_height_ = modified_height_;
-	} 
-	else {
+	else if (mode == CUT_OFF_IMAGE) {
+		image_width_ = kEffectiveImageWidth;
+		image_height_ = kEffectiveImageHeight;
+	}
+	else { // default mode
 		image_width_ = kCsiHorizontalResolution / 2;
 		image_height_ = kCsiVerticalResolution;
 	}
