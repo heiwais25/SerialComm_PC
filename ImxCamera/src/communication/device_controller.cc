@@ -364,6 +364,7 @@ void DeviceController::DoCommand(void) {
 		case CAMERA_SEND_CAPTURED_IMAGE: // Because the image packet is seperated, we need to collect this image pieces
 		case CAMERA_SEND_PACKED_DATA:
 		case CAMERA_SEND_PNG:
+		case CAMERA_SEND_CUT_OFF_IMAGE:
 			CollectImageData();
 			break;
 
@@ -414,14 +415,19 @@ void DeviceController::CollectImageData(void) {
 
 		CollectedImageFormat img_format;
 		int raw_total_length = kCsiHorizontalResolution * kCsiVerticalResolution;
+		int cut_off_raw_total_length = kEffectiveImageWidth * kEffectiveImageHeight * 2;
+
 		if (data_total_length == raw_total_length)
 			img_format = RAW_IMAGE_FORMAT;
 		else if (data_total_length == raw_total_length * 3 / 4)
 			img_format = PACKED_RAW_IMAGE_FORMAT;
+		else if (data_total_length == cut_off_raw_total_length)
+			img_format = CUT_OFF_IMAGE_FORMAT;
 		else
 			img_format = PACKED_PNG_IMAGE_FORMAT;
-		pImageProcessing_->SetImageType(img_format);
 
+
+		pImageProcessing_->SetImageType(img_format);
 		pImageProcessing_->SetImageTotalLength(data_total_length);
 		system("cls");
 	}

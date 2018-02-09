@@ -22,7 +22,6 @@ const int kImageBufferSize = 8388608; // 8MB
 const int kCsiHorizontalResolution = (1514 - 138) * 2;
 const int kCsiVerticalResolution = 988;
 const int kBmpHeaderSize = 54;
-const int kEffectiveImageHeight = 948;
 
 const std::string kPythonPlotFunction = "plot_image";
 const std::string kPythonSaveNumpyFunction = "save_image_by_numpy";
@@ -42,6 +41,10 @@ const int kRightImageWidth = 147;
 const int kTopBlack = 3;
 const int kBottomBlack = 38;
 const int kLeftOneLine = 1; // There are duplicated line at the left corner
+
+// Without black area
+const int kEffectiveImageHeight = 948;
+const int kEffectiveImageWidth = (int)kCsiHorizontalResolution / 2 - kCenterBlackLine;
 
 // There are horizontal black pixel region at the some point of image. Basically, the width of black pixel is 21
 const int kBlackPixelWidth = 21;
@@ -65,12 +68,14 @@ const BYTE kaBmpHeader[] =
 const enum ImageType {
 	RAW_IMAGE = 0,
 	MODIFIED_IMAGE = 1,
+	CUT_OFF_IMAGE,
 };
 
 const enum CollectedImageFormat {
 	RAW_IMAGE_FORMAT = 0,
 	PACKED_RAW_IMAGE_FORMAT = 1,
 	PACKED_PNG_IMAGE_FORMAT = 2,
+	CUT_OFF_IMAGE_FORMAT = 3,
 };
 
 const enum ImageProcessOptionList {

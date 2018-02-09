@@ -80,6 +80,10 @@ void ImageProcessing::ImageModification(void) {
 			// Anything to do
 			break;
 
+		case CUT_OFF_IMAGE_FORMAT:
+			memcpy(image_buffer_, &collected_image_buffer_[0], collected_image_total_length_);
+			break;
+			
 		case PACKED_RAW_IMAGE_FORMAT:
 			UnpackImageData();
 			break;
@@ -133,6 +137,10 @@ void ImageProcessing::ChooseImageProcessOption(void) {
 
 				case '6':
 					SaveInNumpyFormat();
+					break;
+
+				case '7':
+					SaveInBitmapImage(CUT_OFF_IMAGE);
 					break;
 
 				default:
@@ -199,6 +207,10 @@ void ImageProcessing::set_image_size_(ImageType mode) {
 		modified_raw_data_size_ = modified_width_ * 2 * modified_height_;
 		ApplyCutEachSide();
 	}
+	else if (mode == CUT_OFF_IMAGE) {
+		image_width_ = kEffectiveImageWidth;
+		image_height_ = kEffectiveImageHeight;
+	}
 	else { // default mode
 		image_width_ = kCsiHorizontalResolution / 2;
 		image_height_ = kCsiVerticalResolution;
@@ -222,6 +234,8 @@ void ImageProcessing::fill_bmp_image_data_(ImageType type) {
 	BYTE * pImgData;
 
 	if (type == RAW_IMAGE)
+		pImgData = image_buffer_;
+	else if(type == CUT_OFF_IMAGE)
 		pImgData = image_buffer_;
 	else
 		pImgData = modified_image_buffer_;
@@ -483,6 +497,7 @@ void ImageProcessing::ShowImageProcessOptions(void) {
 	std::cout << "4) Save in raw data(modified)" << std::endl;
 	std::cout << "5) Draw by python(modified)" << std::endl;
 	std::cout << "6) Save by numpy format 16bit(modified)" << std::endl;
+	std::cout << "7) Save in bmp format(cut off)" << std::endl;
 	std::cout << "x) Go to previous menu" << std::endl;
 }
 
