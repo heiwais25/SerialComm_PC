@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "png_converter.h"
 
+static int img_width_ = 0;
+static int img_height_ = 0;
 
 void read_data_memory(png_structp png_ptr, png_bytep data, png_size_t length){
 	MEMORY_READER_STATE *f = (MEMORY_READER_STATE *)png_get_io_ptr(png_ptr);
@@ -59,6 +61,9 @@ void DecodeImageData(std::vector<BYTE> & image_source, int & image_size) {
 		&colorType,
 		NULL, NULL, NULL);
 
+	img_width_ = width;
+	img_height_ = height;
+
 	if (retval != 1) {
 		std::cout << "Error in reading png" << std::endl;
 		return;
@@ -95,4 +100,9 @@ void DecodeImageData(std::vector<BYTE> & image_source, int & image_size) {
 	// Finish the reading
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 	return;
+}
+
+void GetImageWidthHeight(unsigned int & width, unsigned int & height) {
+	width = img_width_;
+	height = img_height_;
 }

@@ -95,7 +95,10 @@ class ImageProcessing {
 			modified_raw_data_size_(0),
 			collected_image_total_length_(0),
 			collected_image_type_(RAW_IMAGE_FORMAT),
-			minimum_value_(255)
+			minimum_value_(255),
+			kHaveImageDimension(0),
+			image_width_from_png_(0),
+			image_height_from_png_(0)
 		{
 			memcpy(bmp_header_, kaBmpHeader, sizeof(kaBmpHeader));
 			original_width_ = kCsiHorizontalResolution / 2;
@@ -176,6 +179,9 @@ class ImageProcessing {
 		unsigned int image_width_;
 		unsigned int image_height_;
 
+		unsigned int image_width_from_png_;
+		unsigned int image_height_from_png_;
+
 		unsigned int modified_width_;
 		unsigned int modified_height_;
 
@@ -186,4 +192,6 @@ class ImageProcessing {
 		CollectedImageFormat collected_image_type_;
 		BYTE minimum_value_;
 		int invalid_pixel_offset_;
+
+		BYTE kHaveImageDimension;
 };
