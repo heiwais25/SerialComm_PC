@@ -65,12 +65,14 @@ const BYTE kaBmpHeader[] =
 const enum ImageType {
 	RAW_IMAGE = 0,
 	MODIFIED_IMAGE = 1,
+	CUT_OFF_IMAGE,
 };
 
 const enum CollectedImageFormat {
 	RAW_IMAGE_FORMAT = 0,
 	PACKED_RAW_IMAGE_FORMAT = 1,
 	PACKED_PNG_IMAGE_FORMAT = 2,
+	CUT_OFF_IMAGE_FORMAT = 3,
 };
 
 const enum ImageProcessOptionList {

@@ -285,24 +285,24 @@ void DeviceController::SetImageToRead() {
 	SetSendingPacketInfo(0x00, READ_IMAGE, 0x02, value);
 	SendPacket();
 }
-
-void DeviceController::CameraCaptureWithExposure(void) {
-	ShowExposureOption();
-	BYTE c;
-	while (1) {
-		c = GetOneCharKeyboardInput();
-		if (c == 'x') {
-			std::cout << "Exit" << std::endl;
-			return;
-		}
-		if (isDecimalNumber(c)) {
-			c = toDecimalNumber(c);
-			break;
-		}
-	}
-	SetSendingPacketInfo(0x00, CAMERA_CAPTURE_LONG_EXPOSURE, 0x01, &c);
-	SendPacket();
-}
+//
+//void DeviceController::CameraCaptureWithExposure(void) {
+//	ShowExposureOption();
+//	BYTE c;
+//	while (1) {
+//		c = GetOneCharKeyboardInput();
+//		if (c == 'x') {
+//			std::cout << "Exit" << std::endl;
+//			return;
+//		}
+//		if (isDecimalNumber(c)) {
+//			c = toDecimalNumber(c);
+//			break;
+//		}
+//	}
+//	SetSendingPacketInfo(0x00, CAMERA_CAPTURE_LONG_EXPOSURE, 0x01, &c);
+//	SendPacket();
+//}
 
 void DeviceController::SetCameraGainOption(void) {
 	ShowGainSettingOption();
@@ -364,6 +364,7 @@ void DeviceController::DoCommand(void) {
 		case CAMERA_SEND_CAPTURED_IMAGE: // Because the image packet is seperated, we need to collect this image pieces
 		case CAMERA_SEND_PACKED_DATA:
 		case CAMERA_SEND_PNG:
+		case CAMERA_SEND_CUT_OFF_IMAGE:
 			CollectImageData();
 			break;
 
@@ -414,14 +415,17 @@ void DeviceController::CollectImageData(void) {
 
 		CollectedImageFormat img_format;
 		int raw_total_length = kCsiHorizontalResolution * kCsiVerticalResolution;
+		int cut_off_total_lentgh = (kCsiHorizontalResolution / 2 - kCenterBlackLine) * 2 * kCsiVerticalResolution;
 		if (data_total_length == raw_total_length)
 			img_format = RAW_IMAGE_FORMAT;
 		else if (data_total_length == raw_total_length * 3 / 4)
 			img_format = PACKED_RAW_IMAGE_FORMAT;
+		else if (data_total_length == cut_off_total_lentgh)
+			img_format = CUT_OFF_IMAGE_FORMAT;
 		else
 			img_format = PACKED_PNG_IMAGE_FORMAT;
-		pImageProcessing_->SetImageType(img_format);
 
+		pImageProcessing_->SetImageType(img_format);
 		pImageProcessing_->SetImageTotalLength(data_total_length);
 		system("cls");
 	}
