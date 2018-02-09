@@ -265,3 +265,16 @@ __pycache__/
 /ImxCamera/LibZ.dll
 /ImxCamera/python3.dll
 /ImxCamera/python36.dll
+/ImxCamera/doc/LibPng/doc/contrib/testpngs
+/ImxCamera/doc/LibPng/doc/contrib/tools
+/ImxCamera/doc/LibPng/doc/contrib/visupng
+/ImxCamera/doc/LibPng/doc/projects
+/ImxCamera/doc/LibPng/doc/scripts
+/ImxCamera/doc/LibPng/doc/contrib
+/ImxCamera/doc/LibPng/doc
+/ImxCamera/doc/LibPng/include
+/ImxCamera/doc/LibPng/lib
+/ImxCamera/doc/LibPng/src
+/ImxCamera/doc/zlib/include
+/ImxCamera/doc
+/ImxCamera/zlib.dll

@@ -29,7 +29,7 @@ int main() {
 			UnitTest_ImageProcessing(); 
 	}
 	else {
-		std::string port_number = "COM4";
+		std::string port_number = "COM3";
 		PacketProtocol * hController = new DeviceController(port_number);
 
 		//// Choose whether start communicate or other option
@@ -67,7 +67,7 @@ void ChooseCommMode(void) {
 	What you need to do is put raw data from camera to the parameter of ReadImageData
 */
 void UnitTest_ImageProcessing(void) {
-	std::string raw_file_name = "tests/example_data/raw_image_sample";
+	std::string raw_file_name = "tests/example_data/example_image_raw";
 	ImageProcessing * pImgProcessing = new ImageProcessing();
 	pImgProcessing->ReadImageData(raw_file_name);
 	std::cout << std::endl;
