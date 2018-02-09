@@ -124,6 +124,10 @@ void DeviceController::DoImageTransmission(void) {
 			break;
 
 		case '4':
+			SendCommand(CAMERA_SEND_CUT_OFF_IMAGE);
+			break;
+
+		case '5':
 			SendCommand(COMMAND_CAMERA_SEND_LAST_ACTIVATED_MODE);
 			break;
 
@@ -167,20 +171,26 @@ void DeviceController::DoImageProcess(void) {
 			break;
 
 		case '3':
-			SendCommand(SAVE_IMAGE);
+			SendCommand(CUT_IMAGE);
 			break;
 
 		case '4':
-			SetImageToRead();
+			SendCommand(SAVE_IMAGE);
 			break;
 
 		case '5':
-			SendCommand(SHOW_STORED_IMAGE_LIST);
+			SetImageToRead();
 			break;
 
 		case '6':
+			SendCommand(SHOW_STORED_IMAGE_LIST);
+			break;
+
+		case '7':
 			SendCommand(DELETE_LAST_NODE);
 			break;
+
+
 
 		case 'x':
 			break;
@@ -595,7 +605,8 @@ void DeviceController::ShowImageTransmissionOption(void) {
 	std::cout << "1) Send raw image format" << std::endl;
 	std::cout << "2) Send packed image format" << std::endl;
 	std::cout << "3) Send packed png format" << std::endl;
-	std::cout << "4) Send last activated mode" << std::endl;
+	std::cout << "4) Send cut off image" << std::endl;
+	std::cout << "5) Send last activated mode" << std::endl;
 	std::cout << "x) Go to previous menu" << std::endl;
 }
 
@@ -603,10 +614,11 @@ void DeviceController::ShowImageProcessOption(void) {
 	SplitLine();
 	std::cout << "1) Pack raw image data" << std::endl;
 	std::cout << "2) Convert packed image to png " << std::endl;
-	std::cout << "3) Save image data to emmc" << std::endl;
-	std::cout << "4) Read image data from emmc" << std::endl;
-	std::cout << "5) Show stored image list" << std::endl;
-	std::cout << "6) Delete last node" << std::endl;
+	std::cout << "3) Cut image edges" << std::endl;
+	std::cout << "4) Save image data to emmc" << std::endl;
+	std::cout << "5) Read image data from emmc" << std::endl;
+	std::cout << "6) Show stored image list" << std::endl;
+	std::cout << "7) Delete last node" << std::endl;
 	std::cout << "x) Go to previous menu" << std::endl;
 }
 
