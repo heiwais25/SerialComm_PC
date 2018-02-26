@@ -34,8 +34,8 @@ public:
 	void SetCameraParamsValue(void);
 
 
-	void SetCameraGainOption(void);
-	void ChooseGainSettingOption(void);
+	void SetCameraFineSetting(void);
+	void ChooseCameraFineSetting(void);
 	void SetCDSGain(void);
 	void SetVGAGain(void);
 	void SetBlackLevel(void);
@@ -43,6 +43,8 @@ public:
 	void SetImageToRead(void);
 
 	virtual void DoCommand(void);
+
+	void SetLEDPeriod(void);
 
 	void CheckEchoTest();
 	void CollectImageData(void);
@@ -65,7 +67,7 @@ public:
 	void ShowEchoTestOptions(void);
 	void ShowCameraOperationOption(void);
 	void ShowExposureOption(void);
-	void ShowGainSettingOption(void);
+	void ShowCameraFineSettingOption(void);
 	void ShowCDSOption(void);
 	void ShowControlCameraOption(void);
 	void ShowImageTransmissionOption(void);

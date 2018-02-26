@@ -88,7 +88,7 @@ void DeviceController::DoControlCamera(void) {
 			break;
 
 		case '4':
-			SetCameraGainOption();
+			SetCameraFineSetting();
 			break;
 
 		case 'x':
@@ -309,12 +309,12 @@ void DeviceController::SetImageToRead() {
 //	SendPacket();
 //}
 
-void DeviceController::SetCameraGainOption(void) {
-	ShowGainSettingOption();
-	ChooseGainSettingOption();
+void DeviceController::SetCameraFineSetting(void) {
+	ShowCameraFineSettingOption();
+	ChooseCameraFineSetting();
 }
 
-void DeviceController::ChooseGainSettingOption(void) {
+void DeviceController::ChooseCameraFineSetting(void) {
 	BYTE c;
 	while (1) {
 		if (c = GetOneCharKeyboardInput())
@@ -335,6 +335,10 @@ void DeviceController::ChooseGainSettingOption(void) {
 		
 		case '4':
 			SetExposureTime();
+			break;
+
+		case '5':
+			SetLEDPeriod();
 			break;
 
 		case 'x':
@@ -377,6 +381,20 @@ void DeviceController::DoCommand(void) {
 			printf("%x\n", hReceivedPacket.command);
 			break;
 	}
+}
+
+
+void DeviceController::SetLEDPeriod(void) {
+	// Get LED period value
+	std::cout << "Set one LED pulse period" << std::endl;
+	int setting_value = getValueLowerThanMaximum(4095);
+
+	// Send command with value
+	unsigned char value[2];
+	value[0] = setting_value & 0xff;
+	value[1] = (setting_value >> 8) & 0xff;
+	SetSendingPacketInfo(0x00, CAMERA_SET_LED_PERIOD, 0x02, value);
+	SendPacket();
 }
 
 
@@ -580,13 +598,14 @@ void DeviceController::ShowExposureOption(void) {
 	std::cout << "x) Back to previous menu" << std::endl;
 }
 
-void DeviceController::ShowGainSettingOption() {
+void DeviceController::ShowCameraFineSettingOption() {
 	SplitLine();
 	std::cout << "Which camera option do you want to do" << std::endl;
 	std::cout << "1) Set CDS Gain" << std::endl;
 	std::cout << "2) Set VGA Gain" << std::endl;
 	std::cout << "3) Set Black Level" << std::endl;
 	std::cout << "4) Set Exposure Time" << std::endl;
+	std::cout << "5) Set LED period" << std::endl;
 	std::cout << "x) Back to previous menu" << std::endl;
 
 }
