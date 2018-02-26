@@ -637,7 +637,7 @@ void DeviceController::ShowImageTransmissionOption(void) {
 	std::cout << "2) Send packed image format" << std::endl;
 	std::cout << "3) Send packed png format" << std::endl;
 	std::cout << "4) Send cut off image" << std::endl;
-	std::cout << "4) Send packed cut off png image" << std::endl;
+	std::cout << "5) Send packed cut off png image" << std::endl;
 	std::cout << "6) Send last activated mode" << std::endl;
 	std::cout << "x) Go to previous menu" << std::endl;
 }

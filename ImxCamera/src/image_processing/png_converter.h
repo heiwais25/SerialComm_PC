@@ -15,4 +15,6 @@ typedef struct {
 
 void DecodeImageData(std::vector<BYTE> & image_source, int & image_size);
 
+void GetImageWidthHeight(unsigned int & width, unsigned int & height);
+
 #endif

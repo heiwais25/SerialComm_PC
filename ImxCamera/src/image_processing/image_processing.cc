@@ -89,10 +89,13 @@ void ImageProcessing::ImageModification(void) {
 			break;
 
 		case PACKED_PNG_IMAGE_FORMAT:
+			kHaveImageDimension = true;
 			image_buffer_size = collected_image_total_length_;
 			DecodeImageData(collected_image_buffer_, image_buffer_size);
+			GetImageWidthHeight(image_width_from_png_, image_height_from_png_);
 			collected_image_total_length_ = image_buffer_size;
 			UnpackImageData();
+			collected_image_total_length_ = image_width_from_png_ * 4 / 3 * image_height_from_png_;
 			break;
 
 		default:
@@ -148,6 +151,7 @@ void ImageProcessing::ChooseImageProcessOption(void) {
 			}
 		}
 	}
+	kHaveImageDimension = false;
 }
 
 /*
@@ -192,28 +196,33 @@ void ImageProcessing::SaveInNumpyFormat(void) {
 */
 void ImageProcessing::set_image_size_(ImageType mode) {
 	// TODO : Change this modified width
-	modified_width_ = kCsiHorizontalResolution / 2 - (kCenterBlackLine);
+	modified_width_ = kEffectiveImageWidth;
 
 	// Height position can be different
 	modified_height_ = kEffectiveImageHeight;
 
-
-	// modified_height_ = kCsiVerticalResolution;
-
-	if (mode == MODIFIED_IMAGE) { // Apply modification
-		GetBlackLineStartPoint();
-		image_width_ = modified_width_;
-		image_height_ = modified_height_;
-		modified_raw_data_size_ = modified_width_ * 2 * modified_height_;
-		ApplyCutEachSide();
+	// Not cut off version
+	if (collected_image_total_length_ != kEffectiveImageWidth * kEffectiveImageHeight * 2) {
+		if (mode == MODIFIED_IMAGE) {
+			GetBlackLineStartPoint();
+			image_width_ = modified_width_;
+			image_height_ = modified_height_;
+			modified_raw_data_size_ = image_width_ * 2 * image_height_;
+			ApplyCutEachSide();
+		}
+		else {
+			image_width_ = kCsiHorizontalResolution / 2;
+			image_height_ = kCsiVerticalResolution;
+		}
 	}
-	else if (mode == CUT_OFF_IMAGE) {
+	// Cut off version
+	else {
+		if (mode == MODIFIED_IMAGE) {
+			memcpy(modified_image_buffer_, image_buffer_, collected_image_total_length_);
+		}
 		image_width_ = kEffectiveImageWidth;
 		image_height_ = kEffectiveImageHeight;
-	}
-	else { // default mode
-		image_width_ = kCsiHorizontalResolution / 2;
-		image_height_ = kCsiVerticalResolution;
+		modified_raw_data_size_ = image_width_ * image_height_ * 2;
 	}
 }
 
