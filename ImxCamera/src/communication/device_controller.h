@@ -48,7 +48,7 @@ public:
 	void CollectImageData(void);
 	void CollectPackedImageData(void);
 	void CollectPNGImageData(void);
-
+	void SetLEDPeriod(void);
 
 
 	void DoControlCamera(void);

@@ -88,7 +88,7 @@ void DeviceController::DoControlCamera(void) {
 			break;
 
 		case '4':
-			SetCameraGainOption();
+			SetCameraFineSettingOption();
 			break;
 
 		case 'x':
@@ -278,7 +278,15 @@ void DeviceController::ChooseCameraOperation(void) {
 	}
 }
 
-
+void DeviceController::SetLEDPeriod(void) {
+	std::cout << "Set LED Period time" << std::endl;
+	int setting_value = getValueLowerThanMaximum(4095);
+	unsigned char value[2];
+	value[0] = setting_value & 0xff;
+	value[1] = (setting_value >> 8) & 0xff;
+	SetSendingPacketInfo(0x00, CAMERA_SET_LED_PERIOD, 0x02, value);
+	SendPacket();
+}
 
 
 void DeviceController::SetImageToRead() {
@@ -309,12 +317,12 @@ void DeviceController::SetImageToRead() {
 //	SendPacket();
 //}
 
-void DeviceController::SetCameraGainOption(void) {
-	ShowGainSettingOption();
-	ChooseGainSettingOption();
+void DeviceController::SetCameraFineSettingOption(void) {
+	ShowFineSettingList();
+	ChooseFindSetting();
 }
 
-void DeviceController::ChooseGainSettingOption(void) {
+void DeviceController::ChooseFindSetting(void) {
 	BYTE c;
 	while (1) {
 		if (c = GetOneCharKeyboardInput())
@@ -335,6 +343,10 @@ void DeviceController::ChooseGainSettingOption(void) {
 		
 		case '4':
 			SetExposureTime();
+			break;
+
+		case '5':
+			SetLEDPeriod();
 			break;
 
 		case 'x':
@@ -580,13 +592,14 @@ void DeviceController::ShowExposureOption(void) {
 	std::cout << "x) Back to previous menu" << std::endl;
 }
 
-void DeviceController::ShowGainSettingOption() {
+void DeviceController::ShowFineSettingList() {
 	SplitLine();
 	std::cout << "Which camera option do you want to do" << std::endl;
 	std::cout << "1) Set CDS Gain" << std::endl;
 	std::cout << "2) Set VGA Gain" << std::endl;
 	std::cout << "3) Set Black Level" << std::endl;
 	std::cout << "4) Set Exposure Time" << std::endl;
+	std::cout << "5) Set LED Period" << std::endl;
 	std::cout << "x) Back to previous menu" << std::endl;
 
 }
