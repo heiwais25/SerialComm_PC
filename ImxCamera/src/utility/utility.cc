@@ -126,3 +126,16 @@ int DrawPercentageArrow(int parts_length, int total_length) {
 
 	return 0;
 }
+
+/*
+	Description : Wait until there are keyboard input and return the char input
+	Return      : (BYTE) keyboard_input
+*/
+BYTE GetOneChar() {
+	BYTE c;
+	while (1) {
+		if (c = GetOneCharKeyboardInput())
+			break;
+	}
+	return c;
+}

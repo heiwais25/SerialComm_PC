@@ -4,4 +4,6 @@
 
 #include <stdio.h>
 #include <tchar.h>
+#include <vector>
 
+using std::vector;

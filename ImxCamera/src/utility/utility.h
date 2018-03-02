@@ -23,6 +23,8 @@ int getValueLowerThanMaximum(int maximum_value);
 
 int DrawPercentageArrow(int parts_length, int total_length);
 
+BYTE GetOneChar();
+
 // Color code table
 const enum AnsiColorCode {
 	ANSI_DEFAULT = 0,

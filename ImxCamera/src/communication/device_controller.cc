@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "device_controller.h"
 
+
+
 void DeviceController::PickAndSendCommand(void) {
 	BYTE c;
 	ShowTestOptions();
@@ -58,6 +60,8 @@ void DeviceController::EchoTest() {
 	SendPacket();
 }
 
+
+
 /*
 	Do camera test including taking picture and some gain setting
 */
@@ -68,11 +72,11 @@ void DeviceController::CameraTest(void) {
 
 void DeviceController::DoControlCamera(void) {
 	ShowControlCameraOption();
-	BYTE c;
-	while (1) {
+	BYTE c = GetOneChar();
+	/* while (1) {
 		if (c = GetOneCharKeyboardInput())
 			break;
-	}
+	} */
 	switch (c)
 	{
 		case '1':
@@ -244,19 +248,14 @@ void DeviceController::BlankLED(void) {
 }
 
 
-
+/*
+	It will choose operation mode among 3 main operaion modes
+	1. Control camera
+	2. Image transmission
+	3. Image process
+*/
 void DeviceController::ChooseCameraOperation(void) {
-	/*
-		It will choose operation mode among 3 main operaion modes
-		1. Control camera
-		2. Image transmission
-		3. Image process
-	*/
-	BYTE c;
-	while (1) {
-		if (c = GetOneCharKeyboardInput())
-			break;
-	}
+	BYTE c = GetOneChar();
 	switch (c) {
 		case '1':
 			DoControlCamera();
@@ -278,52 +277,66 @@ void DeviceController::ChooseCameraOperation(void) {
 	}
 }
 
+// Fine setting of camera option list. These options are affecting when we capture the image
+
+/*
+	Decription
+	- It will set the period of one LED blink when we capture the image
+*/
 void DeviceController::SetLEDPeriod(void) {
 	std::cout << "Set LED Period time" << std::endl;
 	int setting_value = getValueLowerThanMaximum(4095);
-	unsigned char value[2];
-	value[0] = setting_value & 0xff;
-	value[1] = (setting_value >> 8) & 0xff;
-	SetSendingPacketInfo(0x00, CAMERA_SET_LED_PERIOD, 0x02, value);
-	SendPacket();
+	SendShortValue(CAMERA_SET_LED_PERIOD, setting_value);
+}
+
+/*
+	Decription
+	- It will set the number of pictures to take
+	- It will be necessary to calculate the mean and deviation of each pixel or image
+*/
+void DeviceController::SetNumberOfPicture(void) {
+	std::cout << "Set Number of pictures to capture" << std::endl;
+	int setting_value = getValueLowerThanMaximum(4095);
+	SendShortValue(CAMERA_SET_NUMBER_OF_PICTURES, setting_value);
 }
 
 
 void DeviceController::SetImageToRead() {
 	std::cout << "Select the position of image stored at EMMC" << std::endl;
 	int setting_value = getValueLowerThanMaximum(1024);
-	unsigned char value[2];
+	SendShortValue(READ_IMAGE, setting_value);
+
+	/*unsigned char value[2];
 	value[0] = setting_value & 0xff;
 	value[1] = (setting_value >> 8) & 0xff;
 	SetSendingPacketInfo(0x00, READ_IMAGE, 0x02, value);
-	SendPacket();
+	SendPacket();*/
 }
-//
-//void DeviceController::CameraCaptureWithExposure(void) {
-//	ShowExposureOption();
-//	BYTE c;
-//	while (1) {
-//		c = GetOneCharKeyboardInput();
-//		if (c == 'x') {
-//			std::cout << "Exit" << std::endl;
-//			return;
-//		}
-//		if (isDecimalNumber(c)) {
-//			c = toDecimalNumber(c);
-//			break;
-//		}
-//	}
-//	SetSendingPacketInfo(0x00, CAMERA_CAPTURE_LONG_EXPOSURE, 0x01, &c);
-//	SendPacket();
-//}
+
 
 void DeviceController::SetCameraFineSettingOption(void) {
 	ShowFineSettingList();
 	ChooseFindSetting();
 }
 
+// /*
+//	Description
+//		- Capture previously set number of images and stack them to calculate the mean and average
+//		- There are options 
+//		1) Calculate each pixel's mean, dev 
+//		2) Calculate whole pixel's mean, dev
+//
+// */
+//void DeviceController::CaptureStackImages(void) {
+//
+//
+//}
+
+
 void DeviceController::ChooseFindSetting(void) {
 	BYTE c;
+	
+	
 	while (1) {
 		if (c = GetOneCharKeyboardInput())
 			break;
@@ -347,6 +360,10 @@ void DeviceController::ChooseFindSetting(void) {
 
 		case '5':
 			SetLEDPeriod();
+			break;
+
+		case '6':
+			SetNumberOfPicture();
 			break;
 
 		case 'x':
@@ -600,6 +617,7 @@ void DeviceController::ShowFineSettingList() {
 	std::cout << "3) Set Black Level" << std::endl;
 	std::cout << "4) Set Exposure Time" << std::endl;
 	std::cout << "5) Set LED Period" << std::endl;
+	std::cout << "6) Set number of pictures to capture" << std::endl;
 	std::cout << "x) Back to previous menu" << std::endl;
 
 }
@@ -656,4 +674,17 @@ void DeviceController::ShowLEDOption(void) {
 	std::cout << "3) Blank the LED" << std::endl;
 	std::cout << "x) Go to previous menu" << std::endl;
 
+}
+
+
+
+/*
+	Send short values with certain command (2bytes)
+*/
+void DeviceController::SendShortValue(BYTE command, int value) {
+	vector<BYTE> value_vec(2);
+	value_vec[0] = value & 0xff;
+	value_vec[1] = (value >> 8) & 0xff;
+	SetSendingPacketInfo(0x00, command, value_vec);
+	SendPacket();
 }

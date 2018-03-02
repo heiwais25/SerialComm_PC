@@ -1,8 +1,11 @@
 #pragma once
 #include <Windows.h>
+#include <vector>
 #include "uart.h"
 #include "utility.h"
 #include "comm_protocol.h"
+
+using std::vector;
 
 const enum SENDING_PACKET_STATE{
 	PACKET_EMPTY = 0,
@@ -40,9 +43,12 @@ class PacketProtocol {
 		virtual void PickAndSendCommand() = 0;
 		virtual void DoCommand(void) = 0;
 
+
+
 		void GetPacket(WORD read_from_device);
 
 		void SetSendingPacketInfo(WORD packet_number, BYTE command, WORD length, BYTE * data);
+		void SetSendingPacketInfo(WORD packet_number, BYTE command, vector<BYTE> data);
 
 		void SendPacket(void);
 		void SendCommand(BYTE command);
@@ -50,11 +56,11 @@ class PacketProtocol {
 		void SendPacketHeader(void);
 		void SendPacketData(void);
 		void SendPacketFooter(void);
-
+		
 	
 		void CheckPacketLength(void);
 		void CheckPacketChecksumAndEtx(void);
-
+		
 
 
 		ReceiveStatus CheckReceivedPacket(WORD read_from_device);

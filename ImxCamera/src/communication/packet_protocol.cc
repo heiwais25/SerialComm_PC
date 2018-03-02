@@ -100,6 +100,8 @@ void PacketProtocol::ScanPort(void) {
 	}
 }
 
+
+
  // Set packet information required to send packet to device
 void PacketProtocol::SetSendingPacketInfo(WORD packet_number, BYTE command, WORD length, BYTE * data) {
 	if (length > kPacketDataSize) {
@@ -115,6 +117,25 @@ void PacketProtocol::SetSendingPacketInfo(WORD packet_number, BYTE command, WORD
 	memcpy(hSendingPacket.data, data, length);
 	IndicatePacketState(PACKET_FILLED);
 }
+
+// Set packet information required to send packet to device
+// In the case of vector
+void PacketProtocol::SetSendingPacketInfo(WORD packet_number, BYTE command, vector<BYTE> data) {
+	int length = data.size();
+	if (length > kPacketDataSize) {
+		SplitLine();
+		std::cerr << "Packet data size exceed the maximum packet data size " << length << " > " << kPacketDataSize << std::endl;
+		throw PacketDataLengthError{};
+	}
+	hSendingPacket.number[0] = packet_number & 0Xff;
+	hSendingPacket.number[1] = packet_number >> 8;
+	hSendingPacket.command = command;
+	hSendingPacket.length[0] = length & 0xff;
+	hSendingPacket.length[1] = length >> 8;
+	memcpy(hSendingPacket.data, &data[0], length);
+	IndicatePacketState(PACKET_FILLED);
+}
+
 
 // Send only command
 void PacketProtocol::SendCommand(BYTE command) {
