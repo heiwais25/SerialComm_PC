@@ -42,13 +42,13 @@ int main() {
 
 void ChooseCommMode(void) {
 	BYTE c;
-	std::cout << "1) Start communication" << std::endl;
-	std::cout << "x) Exit" << std::endl;
+	cout << "1) Start communication" << endl;
+	cout << "x) Exit" << endl;
 
 	while (1) {
 		c = (BYTE)GetOneCharKeyboardInput();
 		if (c == '1') {
-			std::cout << "Start!" << std::endl;
+			cout << "Start!" << endl;
 			SplitLine();
 			break;
 		}
@@ -70,7 +70,7 @@ void UnitTest_ImageProcessing(void) {
 	std::string raw_file_name = "tests/example_data/example_image_raw";
 	ImageProcessing * pImgProcessing = new ImageProcessing();
 	pImgProcessing->ReadImageData(raw_file_name);
-	std::cout << std::endl;
-	std::cout << "Offset : " << pImgProcessing->GetBlackLineStartPoint() << std::endl;
+	cout << endl;
+	cout << "Offset : " << pImgProcessing->GetBlackLineStartPoint() << endl;
 	pImgProcessing->ChooseImageProcessOption();
 }

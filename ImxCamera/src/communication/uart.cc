@@ -8,11 +8,11 @@ void Uart::OpenPort(std::string port_number) {
 		SetTimeOuts();
 	}
 	catch (const ClosedPortError& e) {
-		std::cerr << "Port is closed, please open the port ahead and try again" << std::endl;
+		std::cerr << "Port is closed, please open the port ahead and try again" << endl;
 		exit(1);
 	}
 	catch (...) {
-		std::cerr << "Error in opening port" << std::endl;
+		std::cerr << "Error in opening port" << endl;
 		exit(1);
 	}
 }

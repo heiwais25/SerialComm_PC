@@ -101,7 +101,7 @@ void ImageProcessing::ImageModification(void) {
 		default:
 			break;
 	}
-	std::cout << "Image modification finished" << std::endl;
+	cout << "Image modification finished" << endl;
 }
 
 void ImageProcessing::ChooseImageProcessOption(void) {
@@ -111,7 +111,7 @@ void ImageProcessing::ChooseImageProcessOption(void) {
 		c = GetOneCharKeyboardInput();
 		if (c == 'x' || c == 'X') {
 			initImageProcessOption();
-			std::cout << "Exit" << std::endl;
+			cout << "Exit" << endl;
 			break;
 		}
 
@@ -289,7 +289,7 @@ void ImageProcessing::set_bmp_header_(void) {
 	bmp_header_[22] = static_cast<BYTE>(image_height_);
 	bmp_header_[23] = static_cast<BYTE>(image_height_ >> 8);
 
-	std::cout << "FileSize = " << bmp_file_size_ << "\tWidth = " << image_width_ << "\tHeight = " << image_height_ << std::endl;
+	cout << "FileSize = " << bmp_file_size_ << "\tWidth = " << image_width_ << "\tHeight = " << image_height_ << endl;
 }
 
 /*===============================================================================================================================================================================================================================================================
@@ -321,7 +321,7 @@ int ImageProcessing::GetBlackLineStartPoint(void) {
 			minimum_value_ = high_byte;
 		}
 	}
-	std::cout << "Minimum value at 400th vertical line : " << (int)minimum_value_ << std::endl;
+	cout << "Minimum value at 400th vertical line : " << (int)minimum_value_ << endl;
 
 	for (int hi = 0; hi < original_image_width; hi++) {
 		BYTE high_byte = image_buffer_[hi * 2 + sample_vi * original_image_width + 1];
@@ -349,7 +349,7 @@ int ImageProcessing::GetBlackLineStartPoint(void) {
 
 	// invalid_pixel_offset_ : Offset of gray+black pixel
 	invalid_pixel_offset_ = black_pixel_start_pixel - kLeftGrayPixelWidth;
-	std::cout << "Invalid pixel offset : " << invalid_pixel_offset_ << std::endl;
+	cout << "Invalid pixel offset : " << invalid_pixel_offset_ << endl;
 	return black_pixel_start_pixel;
 }
 
@@ -385,8 +385,8 @@ Returns:
 int ImageProcessing::GetChoppedImageOffset() {
 	int start_offset = (invalid_pixel_offset_ + kCenterBlackLine) * 2;
 	if (start_offset / 2 > original_width_) {
-		std::cout << "Calculated offset is " << start_offset << std::endl;
-		std::cout << "Error on getting chopped image offset" << std::endl;
+		cout << "Calculated offset is " << start_offset << endl;
+		cout << "Error on getting chopped image offset" << endl;
 		return -1;
 	}
 
@@ -461,11 +461,11 @@ void ImageProcessing::ApplyCutEachSide(void) {
 	// 3. Calculate chopped image length
 	int chopped_image_length = GetChoppedImageLength(chopped_image_horizontal_offset);
 
-	std::cout << "Chopped Image Information--------------------------------------------------" << std::endl;
-	std::cout << "Horizontal offset : " << chopped_image_horizontal_offset << std::endl;
-	std::cout << "Vertical offset   : " << chopped_image_vertical_offset << std::endl;
-	std::cout << "Image length      : " << chopped_image_length << std::endl;
-	std::cout << "---------------------------------------------------------------------------" << std::endl;
+	cout << "Chopped Image Information--------------------------------------------------" << endl;
+	cout << "Horizontal offset : " << chopped_image_horizontal_offset << endl;
+	cout << "Vertical offset   : " << chopped_image_vertical_offset << endl;
+	cout << "Image length      : " << chopped_image_length << endl;
+	cout << "---------------------------------------------------------------------------" << endl;
 
 	// 4. Set main image offset information
 	// Usually, the difference of the vertical offset between main image and chopped image is 1
@@ -499,15 +499,15 @@ Helper function
 
 --------------------------------------------------------------------------------------------------------------*/
 void ImageProcessing::ShowImageProcessOptions(void) {
-	std::cout << "Which image process do you want to do" << std::endl;
-	std::cout << "1) Save in bmp format(default)" << std::endl;
-	std::cout << "2) Save in bmp format(modified)" << std::endl;
-	std::cout << "3) Save in raw data(default)" << std::endl;
-	std::cout << "4) Save in raw data(modified)" << std::endl;
-	std::cout << "5) Draw by python(modified)" << std::endl;
-	std::cout << "6) Save by numpy format 16bit(modified)" << std::endl;
-	std::cout << "7) Save in bmp format(cut off)" << std::endl;
-	std::cout << "x) Go to previous menu" << std::endl;
+	cout << "Which image process do you want to do" << endl;
+	cout << "1) Save in bmp format(default)" << endl;
+	cout << "2) Save in bmp format(modified)" << endl;
+	cout << "3) Save in raw data(default)" << endl;
+	cout << "4) Save in raw data(modified)" << endl;
+	cout << "5) Draw by python(modified)" << endl;
+	cout << "6) Save by numpy format 16bit(modified)" << endl;
+	cout << "7) Save in bmp format(cut off)" << endl;
+	cout << "x) Go to previous menu" << endl;
 }
 
 
@@ -540,7 +540,7 @@ Date:				2017-12-29
 ===============================================================================================================================================================================================================================================================*/
 void ImageProcessing::AssembleImageData(BYTE * image_source, WORD image_length) {
 	if (collected_image_total_length_ == 0) {
-		std::cout << "Please set image total length first" << std::endl;
+		cout << "Please set image total length first" << endl;
 		return;
 	}
 	std::vector<BYTE> temp_vec(&image_source[0], &image_source[image_length]);
@@ -568,7 +568,7 @@ void ImageProcessing::write_bmp_to_file(void) {
 
 	bmp_file.write((const char *)bmp_image_data_, bmp_file_size_);
 
-	std::cout << "Saved BMP image file name : " << file_name_str << std::endl;
+	cout << "Saved BMP image file name : " << file_name_str << endl;
 	bmp_file.close();
 }
 
@@ -594,7 +594,7 @@ void ImageProcessing::write_raw_data_to_file(ImageType type) {
 	}
 	raw_file.write(pRawData, image_size);
 
-	std::cout << "Saved Raw image data file name : " << file_name_str << "\tFile size : " << image_size << std::endl;
+	cout << "Saved Raw image data file name : " << file_name_str << "\tFile size : " << image_size << endl;
 	raw_file.close();
 }
 
@@ -637,7 +637,7 @@ void ImageProcessing::ReadImageData(std::string file_name) {
 	int vertical_count = 0;
 	int file_size;
 	if (!(raw_input = fopen(file_name.c_str(), "rb"))) {
-		std::cerr << "There are error in opening file" << std::endl;
+		std::cerr << "There are error in opening file" << endl;
 		exit(1);
 	};
 
@@ -646,7 +646,7 @@ void ImageProcessing::ReadImageData(std::string file_name) {
 
 	fseek(raw_input, 0, SEEK_SET);
 	hex_count = fread(image_buffer_, file_size, 1, raw_input);
-	std::cout << "Succesfully save image with size : " << file_size << std::endl;
+	cout << "Succesfully save image with size : " << file_size << endl;
 	for (int i = 0; i < 20; i++) {
 		printf("%02x\t", image_buffer_[i]);
 	}

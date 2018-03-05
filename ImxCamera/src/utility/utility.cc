@@ -27,9 +27,9 @@ void SplitLine(void) {
 	// Get console size info pointer
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
 	columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-	std::cout << std::endl;
+	cout << endl;
 	while (columns--)
-		std::cout << "=";
+		cout << "=";
 }
 
 void ReadColorFont(BYTE c) {
@@ -40,7 +40,7 @@ void ReadColorFont(BYTE c) {
 		if (c == 0x1b) 
 			is_color_code = true;
 		else 
-			std::cout << c;
+			cout << c;
 	}
 	else {
 		color_count++;
@@ -68,16 +68,16 @@ void ChangeColor(AnsiColorCode color_code) {
 	if (const_iter != m_color_map.end())
 		SetConsoleTextAttribute(hConsole, const_iter->second);
 	else
-		std::cout << "It doesn't have color code at " << color_code << std::endl;
+		cout << "It doesn't have color code at " << color_code << endl;
 }
 
 int getValueLowerThanMaximum(int maximum_value) {
 	int output = 0;
 	while (1) {
-		std::cout << "Input lower than " << maximum_value << " : ";
+		cout << "Input lower than " << maximum_value << " : ";
 		std::cin >> output;
 		if (std::cin.fail()) {
-			std::cout << "Input correct integer number" << std::endl;
+			cout << "Input correct integer number" << endl;
 			std::cin.clear();
 			std::cin.ignore();
 			continue;
@@ -86,7 +86,7 @@ int getValueLowerThanMaximum(int maximum_value) {
 		if (output <= maximum_value) 
 			return output;
 		else 
-			std::cout << "Please input lowerthan " << maximum_value << std::endl;
+			cout << "Please input lowerthan " << maximum_value << endl;
 	}
 }
 
@@ -118,11 +118,11 @@ int DrawPercentageArrow(int parts_length, int total_length) {
 	gotoxy(percentage, center_rows);
 	if (percentage == 0)
 		for (int j = 0; j < arrow.size() - 1; j++) 
-			std::cout << arrow[j];
+			cout << arrow[j];
 	gotoxy(percentage, center_rows);
 	arrow[percentage] = '>';
-	std::cout << arrow[percentage];
-	std::cout << std::endl;
+	cout << arrow[percentage];
+	cout << endl;
 
 	return 0;
 }

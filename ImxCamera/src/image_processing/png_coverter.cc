@@ -19,19 +19,19 @@ void DecodeImageData(std::vector<BYTE> & image_source, int & image_size) {
 	int number_to_check = 8;
 	int is_png = !png_sig_cmp(png_buffer_ptr, 0, number_to_check);
 	if (!is_png) {
-		std::cout << "It is not png format" << std::endl;
+		cout << "It is not png format" << endl;
 		return;
 	}
 
 	// Create png pointer
 	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if (!png_ptr) {
-		std::cout << "Error in make png_ptr" << std::endl;
+		cout << "Error in make png_ptr" << endl;
 		return;
 	}
 	png_infop info_ptr = png_create_info_struct(png_ptr);
 	if (!info_ptr) {
-		std::cout << "Error in make info_ptr" << std::endl;
+		cout << "Error in make info_ptr" << endl;
 		png_destroy_read_struct(&png_ptr, NULL, NULL);
 		return;
 	}
@@ -65,13 +65,13 @@ void DecodeImageData(std::vector<BYTE> & image_source, int & image_size) {
 	img_height_ = height;
 
 	if (retval != 1) {
-		std::cout << "Error in reading png" << std::endl;
+		cout << "Error in reading png" << endl;
 		return;
 	}
 
-	std::cout << "WIDTH x HEIGHT : " << width << " x " << height << std::endl;
-	std::cout << "BITDEPTH : " << bitDepth << std::endl;
-	std::cout << "COLOR TYPE : " << colorType << std::endl;
+	cout << "WIDTH x HEIGHT : " << width << " x " << height << endl;
+	cout << "BITDEPTH : " << bitDepth << endl;
+	cout << "COLOR TYPE : " << colorType << endl;
 	png_read_update_info(png_ptr, info_ptr);
 	// png_bytepp ? png_bytep ?
 	png_bytepp read_row_pointers = (png_bytepp)png_malloc(png_ptr, sizeof(png_bytepp) * height);
@@ -91,7 +91,7 @@ void DecodeImageData(std::vector<BYTE> & image_source, int & image_size) {
 	}
 	image_size = width * height;
 
-	std::cout << "PNG TO BMP FIRST 100 PIXEL VALUE" << std::endl;;
+	cout << "PNG TO BMP FIRST 100 PIXEL VALUE" << endl;;
 	for (int i = 0; i<100; i++) {
 		printf("%02x, ", read_row_pointers[0][i]);
 	}

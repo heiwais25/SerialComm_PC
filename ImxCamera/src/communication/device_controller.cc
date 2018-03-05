@@ -105,13 +105,8 @@ void DeviceController::DoControlCamera(void) {
 
 void DeviceController::DoImageTransmission(void) {
 	ShowImageTransmissionOption();
-	BYTE c;
-	while (1) {
-		if (c = GetOneCharKeyboardInput())
-			break;
-	}
-	switch (c)
-	{
+	BYTE c = GetOneChar();
+	switch (c) {
 		case '1':
 			SendCommand(CAMERA_SEND_CAPTURED_IMAGE);
 			break;
@@ -134,6 +129,14 @@ void DeviceController::DoImageTransmission(void) {
 
 		case '6':
 			SendCommand(COMMAND_CAMERA_SEND_LAST_ACTIVATED_MODE);
+			break;
+
+		case '7':
+			SendCommand(CAMERA_SEND_PIXEL_MEAN);
+			break;
+
+		case '8':
+			SendCommand(CAMERA_SEND_PIXEL_DEV);
 			break;
 
 		case 'x':
@@ -238,7 +241,7 @@ void DeviceController::DoControlLED() {
 }
 
 void DeviceController::BlankLED(void) {
-	std::cout << "Blank the LED with fixed period" << std::endl;
+	cout << "Blank the LED with fixed period" << endl;
 	int setting_value = getValueLowerThanMaximum(4095);
 	unsigned char value[2];
 	value[0] = setting_value & 0xff;
@@ -284,7 +287,7 @@ void DeviceController::ChooseCameraOperation(void) {
 	- It will set the period of one LED blink when we capture the image
 */
 void DeviceController::SetLEDPeriod(void) {
-	std::cout << "Set LED Period time" << std::endl;
+	cout << "Set LED Period time" << endl;
 	int setting_value = getValueLowerThanMaximum(4095);
 	SendShortValue(CAMERA_SET_LED_PERIOD, setting_value);
 }
@@ -295,14 +298,14 @@ void DeviceController::SetLEDPeriod(void) {
 	- It will be necessary to calculate the mean and deviation of each pixel or image
 */
 void DeviceController::SetNumberOfPicture(void) {
-	std::cout << "Set Number of pictures to capture" << std::endl;
+	cout << "Set Number of pictures to capture" << endl;
 	int setting_value = getValueLowerThanMaximum(4095);
 	SendShortValue(CAMERA_SET_NUMBER_OF_PICTURES, setting_value);
 }
 
 
 void DeviceController::SetImageToRead() {
-	std::cout << "Select the position of image stored at EMMC" << std::endl;
+	cout << "Select the position of image stored at EMMC" << endl;
 	int setting_value = getValueLowerThanMaximum(1024);
 	SendShortValue(READ_IMAGE, setting_value);
 
@@ -367,7 +370,7 @@ void DeviceController::ChooseFindSetting(void) {
 			break;
 
 		case 'x':
-			std::cout << "Exit choosing gain setting option" << std::endl;
+			cout << "Exit choosing gain setting option" << endl;
 			return;
 
 		default:
@@ -399,6 +402,8 @@ void DeviceController::DoCommand(void) {
 		case CAMERA_SEND_PACKED_DATA:
 		case CAMERA_SEND_PNG:
 		case CAMERA_SEND_CUT_OFF_IMAGE:
+		case CAMERA_SEND_PIXEL_MEAN:
+		case CAMERA_SEND_PIXEL_DEV:
 			CollectImageData();
 			break;
 
@@ -410,14 +415,14 @@ void DeviceController::DoCommand(void) {
 
 
 void DeviceController::CheckEchoTest() {
-	std::cout << "Send" << "\t" << "Received" << std::endl;
+	cout << "Send" << "\t" << "Received" << endl;
 	for (int i = 0; i < received_packet_data_length; i++) {
-		std::cout << std::hex << hSendingPacket.data[i] << "\t" << std::hex << hReceivedPacket.data[i] << std::endl;
+		cout << std::hex << hSendingPacket.data[i] << "\t" << std::hex << hReceivedPacket.data[i] << endl;
 		if (hReceivedPacket.data[i] - hSendingPacket.data[i]) {
-			std::cerr << "Echo test error" << std::endl;
+			std::cerr << "Echo test error" << endl;
 		}
 	}
-	std::cout << "Echo test Finish" << std::endl;
+	cout << "Echo test Finish" << endl;
 }
 
 /*
@@ -435,7 +440,7 @@ void DeviceController::CollectImageData(void) {
 	static unsigned int received_total_length_ = 0;
 	if (image_piece_number_ != packet_number) {
 
-		std::cerr << "The order of data is packet is wrong" << std::endl;
+		std::cerr << "The order of data is packet is wrong" << endl;
 		// ERROR HANDLING WHEN THE DATA IS CRASHED
 		return;
 	}
@@ -445,20 +450,20 @@ void DeviceController::CollectImageData(void) {
 	// First packet will include image information
 	if (packet_number == 0) {
 		BYTE * data = hReceivedPacket.data;
-
-		
 		data_total_length = (data[3] << 24) + (data[2] << 16) + (data[1] << 8) + data[0];
 
 		CollectedImageFormat img_format;
 		int raw_total_length = kCsiHorizontalResolution * kCsiVerticalResolution;
 		int cut_off_total_lentgh = kEffectiveImageWidth * kEffectiveImageHeight * 2;
+		int pixel_info_total_length = cut_off_total_lentgh * 2;
 		if (data_total_length == raw_total_length)
 			img_format = RAW_IMAGE_FORMAT;
 		else if (data_total_length == raw_total_length * 3 / 4)
 			img_format = PACKED_RAW_IMAGE_FORMAT;
-		else if (data_total_length == cut_off_total_lentgh) {
+		else if (data_total_length == cut_off_total_lentgh)
 			img_format = CUT_OFF_IMAGE_FORMAT;
-		}
+		else if (data_total_length == pixel_info_total_length)
+			img_format = PIXEL_INFO_FORMAT;
 		else
 			img_format = PACKED_PNG_IMAGE_FORMAT;
 
@@ -483,9 +488,9 @@ void DeviceController::CollectImageData(void) {
 	}
 	else {
 		received_total_length_ += received_packet_data_length;
-		std::cout << std::fixed;
-		std::cout.precision(2);
-		std::cout << ((double)(packet_number * kPacketDataSize) / (double)data_total_length)  * 100. << "%" << std::endl;
+		cout << std::fixed;
+		cout.precision(2);
+		cout << ((double)(packet_number * kPacketDataSize) / (double)data_total_length)  * 100. << "%" << endl;
 		DrawPercentageArrow(received_total_length_, data_total_length);
 		SendCommand(CAMERA_SEND_NEXT_PACKET);
 	}
@@ -524,7 +529,7 @@ void DeviceController::SetCDSGain(void) {
 			if (c <= 7)
 				break;
 			else {
-				std::cout << "Choose in the option " << std::endl;
+				cout << "Choose in the option " << endl;
 				ShowCDSOption();
 				continue;
 			}
@@ -539,7 +544,7 @@ void DeviceController::SetCDSGain(void) {
 	Set VGA Gain value which will be affecting to analog gain(0 ~ 1023)
 */
 void DeviceController::SetVGAGain(void) {
-	std::cout << "VGA setting will increase analog signal from CCD sensor in detail(default option : 255)" << std::endl;
+	cout << "VGA setting will increase analog signal from CCD sensor in detail(default option : 255)" << endl;
 	int setting_value = getValueLowerThanMaximum(1024);
 	unsigned char value[2];
 	value[0] = setting_value & 0xff;
@@ -552,7 +557,7 @@ void DeviceController::SetVGAGain(void) {
 	Set VGA Gain value which will be affecting digital level of black level(0 ~ 1023)
 */
 void DeviceController::SetBlackLevel(void) {
-	std::cout << "Set digital level as a black signal(default option : 492)" << std::endl;
+	cout << "Set digital level as a black signal(default option : 492)" << endl;
 	int setting_value = getValueLowerThanMaximum(4095);
 	unsigned char value[2];
 	value[0] = setting_value & 0xff;
@@ -562,7 +567,7 @@ void DeviceController::SetBlackLevel(void) {
 }
 
 void DeviceController::SetExposureTime(void) {
-	std::cout << "Set Exposure Time (default is 1 : 1/30s)" << std::endl;
+	cout << "Set Exposure Time (default is 1 : 1/30s)" << endl;
 	int setting_value = getValueLowerThanMaximum(3000);
 	unsigned char value[2];
 	value[0] = setting_value & 0xff;
@@ -578,101 +583,103 @@ Helper functions
 
 ===================================================================================================================*/
 void DeviceController::ShowTestOptions() {
-	std::cout << "Which command do you want to send" << std::endl;
-	std::cout << "1) Echo test : send sample packet and get same one from device " << std::endl;
-	std::cout << "2) Camera test : do camera test " << std::endl;
-	std::cout << "x) Back to previous menu" << std::endl;
+	cout << "Which command do you want to send" << endl;
+	cout << "1) Echo test : send sample packet and get same one from device " << endl;
+	cout << "2) Camera test : do camera test " << endl;
+	cout << "x) Back to previous menu" << endl;
 }
 
 void DeviceController::ShowEchoTestOptions() {
 	SplitLine();
-	std::cout << "It will send one sample packet to device" << std::endl;
-	std::cout << "Device will send same packet to PC" << std::endl;
-	std::cout << "The purpose of this function is checking packet protocol work well" << std::endl;
-	std::cout << "Enter one charactor" << std::endl;
+	cout << "It will send one sample packet to device" << endl;
+	cout << "Device will send same packet to PC" << endl;
+	cout << "The purpose of this function is checking packet protocol work well" << endl;
+	cout << "Enter one charactor" << endl;
 }
 
 void DeviceController::ShowCameraOperationOption() {
 	SplitLine();
-	std::cout << "Which camera option do you want to do" << std::endl;
-	std::cout << "1) Control camera" << std::endl;
-	std::cout << "2) Image Transmission" << std::endl;
-	std::cout << "3) Image process" << std::endl;
-	std::cout << "4) Control LED" << std::endl;
+	cout << "Which camera option do you want to do" << endl;
+	cout << "1) Control camera" << endl;
+	cout << "2) Image Transmission" << endl;
+	cout << "3) Image process" << endl;
+	cout << "4) Control LED" << endl;
 }
 
 void DeviceController::ShowExposureOption(void) {
 	SplitLine();
-	std::cout << "It will set the exposure time to capture" << std::endl;
+	cout << "It will set the exposure time to capture" << endl;
 	for (int i = 1; i < 10; i++)
-		std::cout << i << ") " << i << "sec" << std::endl;
-	std::cout << "x) Back to previous menu" << std::endl;
+		cout << i << ") " << i << "sec" << endl;
+	cout << "x) Back to previous menu" << endl;
 }
 
 void DeviceController::ShowFineSettingList() {
 	SplitLine();
-	std::cout << "Which camera option do you want to do" << std::endl;
-	std::cout << "1) Set CDS Gain" << std::endl;
-	std::cout << "2) Set VGA Gain" << std::endl;
-	std::cout << "3) Set Black Level" << std::endl;
-	std::cout << "4) Set Exposure Time" << std::endl;
-	std::cout << "5) Set LED Period" << std::endl;
-	std::cout << "6) Set number of pictures to capture" << std::endl;
-	std::cout << "x) Back to previous menu" << std::endl;
+	cout << "Which camera option do you want to do" << endl;
+	cout << "1) Set CDS Gain" << endl;
+	cout << "2) Set VGA Gain" << endl;
+	cout << "3) Set Black Level" << endl;
+	cout << "4) Set Exposure Time" << endl;
+	cout << "5) Set LED Period" << endl;
+	cout << "6) Set number of pictures to capture" << endl;
+	cout << "x) Back to previous menu" << endl;
 
 }
 
 void DeviceController::ShowCDSOption(void) {
 	SplitLine();
-	std::cout << "CDS will increase analog signal from CCD sensor(default option : 2)" << std::endl;
-	std::cout << "1) 0dB" << std::endl;
-	std::cout << "2) 3dB" << std::endl;
-	std::cout << "3) 6dB" << std::endl;
-	std::cout << "4) 9dB" << std::endl;
-	std::cout << "5) 12dB" << std::endl;
-	std::cout << "6) 15dB" << std::endl;
-	std::cout << "7) 18dB" << std::endl;
+	cout << "CDS will increase analog signal from CCD sensor(default option : 2)" << endl;
+	cout << "1) 0dB" << endl;
+	cout << "2) 3dB" << endl;
+	cout << "3) 6dB" << endl;
+	cout << "4) 9dB" << endl;
+	cout << "5) 12dB" << endl;
+	cout << "6) 15dB" << endl;
+	cout << "7) 18dB" << endl;
 }
 
 void DeviceController::ShowControlCameraOption(void) {
 	SplitLine();
-	std::cout << "1) Camera Power On" << std::endl;
-	std::cout << "2) Camera Power Off" << std::endl;
-	std::cout << "3) Camera capture image" << std::endl;
-	std::cout << "4) Camera set camera option" << std::endl;
-	std::cout << "x) Go to previous menu" << std::endl;
+	cout << "1) Camera Power On" << endl;
+	cout << "2) Camera Power Off" << endl;
+	cout << "3) Camera capture image" << endl;
+	cout << "4) Camera set camera option" << endl;
+	cout << "x) Go to previous menu" << endl;
 }
 
 void DeviceController::ShowImageTransmissionOption(void) {
 	SplitLine();
-	std::cout << "1) Send raw image format" << std::endl;
-	std::cout << "2) Send packed image format" << std::endl;
-	std::cout << "3) Send packed png format" << std::endl;
-	std::cout << "4) Send cut off image" << std::endl;
-	std::cout << "5) Send packed cut off png image" << std::endl;
-	std::cout << "6) Send last activated mode" << std::endl;
-	std::cout << "x) Go to previous menu" << std::endl;
+	cout << "1) Send raw image format" << endl;
+	cout << "2) Send packed image format" << endl;
+	cout << "3) Send packed png format" << endl;
+	cout << "4) Send cut off image" << endl;
+	cout << "5) Send packed cut off png image" << endl;
+	cout << "6) Send last activated mode" << endl;
+	cout << "7) Send Image pixel mean" << endl;
+	cout << "8) Send Image pixel dev" << endl;
+	cout << "x) Go to previous menu" << endl;
 }
 
 void DeviceController::ShowImageProcessOption(void) {
 	SplitLine();
-	std::cout << "1) Pack raw image data" << std::endl;
-	std::cout << "2) Convert packed image to png " << std::endl;
-	std::cout << "3) Cut image edges" << std::endl;
-	std::cout << "4) Convert packed cut off image edges to png" << std::endl;
-	std::cout << "5) Save image data to emmc" << std::endl;
-	std::cout << "6) Read image data from emmc" << std::endl;
-	std::cout << "7) Show stored image list" << std::endl;
-	std::cout << "8) Delete last node" << std::endl;
-	std::cout << "x) Go to previous menu" << std::endl;
+	cout << "1) Pack raw image data" << endl;
+	cout << "2) Convert packed image to png " << endl;
+	cout << "3) Cut image edges" << endl;
+	cout << "4) Convert packed cut off image edges to png" << endl;
+	cout << "5) Save image data to emmc" << endl;
+	cout << "6) Read image data from emmc" << endl;
+	cout << "7) Show stored image list" << endl;
+	cout << "8) Delete last node" << endl;
+	cout << "x) Go to previous menu" << endl;
 }
 
 void DeviceController::ShowLEDOption(void) {
 	SplitLine();
-	std::cout << "1) Turn on the LED" << std::endl;
-	std::cout << "2) Turn off the LED" << std::endl;
-	std::cout << "3) Blank the LED" << std::endl;
-	std::cout << "x) Go to previous menu" << std::endl;
+	cout << "1) Turn on the LED" << endl;
+	cout << "2) Turn off the LED" << endl;
+	cout << "3) Blank the LED" << endl;
+	cout << "x) Go to previous menu" << endl;
 
 }
 

@@ -76,6 +76,7 @@ const enum CollectedImageFormat {
 	PACKED_RAW_IMAGE_FORMAT = 1,
 	PACKED_PNG_IMAGE_FORMAT = 2,
 	CUT_OFF_IMAGE_FORMAT = 3,
+	PIXEL_INFO_FORMAT = 4,
 };
 
 const enum ImageProcessOptionList {

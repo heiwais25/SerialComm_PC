@@ -32,7 +32,7 @@ void PythonPlot::InitPythonThread() {
 		SetScriptName();
 	}
 	catch (...) {
-		std::cerr << "Failed to load " << python_script_name_.c_str() << std::endl;
+		std::cerr << "Failed to load " << python_script_name_.c_str() << endl;
 		exit(1);
 	}
 	kIsInitialized = true;
@@ -102,7 +102,7 @@ int PythonPlot::DrawPlot(std::string func_name){
 	InitPythonThread();
 
 	if (!kIsImageDataCopied) {
-		std::cerr << "Needs to copy image data first" << std::endl;
+		std::cerr << "Needs to copy image data first" << endl;
 		throw NodataCopiedError{};
 	}
 
@@ -122,7 +122,7 @@ int PythonPlot::DrawPlot(std::string func_name){
 	}
 
 	// Check result from function and save it
-	std::cout << "Result of call: " << PyLong_AsLong(pValue) << std::endl;
+	cout << "Result of call: " << PyLong_AsLong(pValue) << endl;
 	Py_DECREF(pValue);
 	Py_XDECREF(pFunc);
 	Py_DECREF(pModule);
@@ -160,14 +160,14 @@ int PythonPlot::isValidReturnFromPythonFunction() {
 void PythonPlot::errPrintCallableObject() {
 	if (PyErr_Occurred())
 		PyErr_Print();
-	std::cerr << "Cannot find function " << python_file_name_.c_str() << std::endl;
+	std::cerr << "Cannot find function " << python_file_name_.c_str() << endl;
 }
 
 void PythonPlot::errPrintValidReturn(){
 	Py_DECREF(pFunc);
 	Py_DECREF(pModule);
 	PyErr_Print();
-	std::cerr << "Call failed" << std::endl;
+	std::cerr << "Call failed" << endl;
 }
 
 int PythonPlot::CopyArrayToNumpyArray() {

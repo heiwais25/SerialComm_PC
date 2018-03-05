@@ -80,16 +80,16 @@ void PacketProtocol::ScanPort(void) {
 				GetPacket(data_from_device);
 			}
 			catch (PacketDataLengthError& e) {
-				std::cerr << "Packet data length error" << std::endl;
+				std::cerr << "Packet data length error" << endl;
 			}
 			catch (PacketChecksumError &e) {
-				std::cerr << "Packet Checksum error" << std::endl;
+				std::cerr << "Packet Checksum error" << endl;
 			}
 			catch (PacketEtxError& e) {
-				std::cerr << "Packet ETX error" << std::endl;
+				std::cerr << "Packet ETX error" << endl;
 			}
 			catch (...) {
-				std::cerr << "There are Error in getting packet" << std::endl;
+				std::cerr << "There are Error in getting packet" << endl;
 			}
 			if (kIsFinishReceivePacket_) {
 				DoCommand(); // It will be written in the inheritted class
@@ -106,7 +106,7 @@ void PacketProtocol::ScanPort(void) {
 void PacketProtocol::SetSendingPacketInfo(WORD packet_number, BYTE command, WORD length, BYTE * data) {
 	if (length > kPacketDataSize) {
 		SplitLine();
-		std::cerr << "Packet data size exceed the maximum packet data size " << length << " > " << kPacketDataSize << std::endl;
+		std::cerr << "Packet data size exceed the maximum packet data size " << length << " > " << kPacketDataSize << endl;
 		throw PacketDataLengthError{};
 	}
 	hSendingPacket.number[0] = packet_number & 0Xff;
@@ -124,7 +124,7 @@ void PacketProtocol::SetSendingPacketInfo(WORD packet_number, BYTE command, vect
 	int length = data.size();
 	if (length > kPacketDataSize) {
 		SplitLine();
-		std::cerr << "Packet data size exceed the maximum packet data size " << length << " > " << kPacketDataSize << std::endl;
+		std::cerr << "Packet data size exceed the maximum packet data size " << length << " > " << kPacketDataSize << endl;
 		throw PacketDataLengthError{};
 	}
 	hSendingPacket.number[0] = packet_number & 0Xff;
@@ -152,9 +152,9 @@ void PacketProtocol::SendPacket(void) {
 	// You need to set hSendingPacket before using this function
 	if (!isPacketIncludeInfo()) {
 		SplitLine();
-		std::cerr << "Please check did you include hSendingPacket with your data" << std::endl;
-		std::cerr << "If so, you might don't use set_ready_comm_State() function" << std::endl;
-		std::cerr << "It is required to set to tell SendPacket you fill hSendingPacket" << std::endl;
+		std::cerr << "Please check did you include hSendingPacket with your data" << endl;
+		std::cerr << "If so, you might don't use set_ready_comm_State() function" << endl;
+		std::cerr << "It is required to set to tell SendPacket you fill hSendingPacket" << endl;
 		SplitLine();
 		throw PacketSendingNoInfoError{};
 	}
