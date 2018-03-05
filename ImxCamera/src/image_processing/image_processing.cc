@@ -146,12 +146,25 @@ void ImageProcessing::ChooseImageProcessOption(void) {
 					SaveInBitmapImage(CUT_OFF_IMAGE);
 					break;
 
+				case '8':
+					SavePixelData();
+					break;
+
 				default:
 					break;
 			}
 		}
 	}
 	kHaveImageDimension = false;
+}
+
+/* =========================================================================================
+	Description
+	- Save pixel data like mean and deviation
+========================================================================================= */
+void ImageProcessing::SavePixelData() {
+	set_image_size_(PIXEL_INFO);
+	write_raw_data_to_file(PIXEL_INFO);
 }
 
 /*
@@ -224,6 +237,14 @@ void ImageProcessing::set_image_size_(ImageType mode) {
 		image_height_ = kEffectiveImageHeight;
 		modified_raw_data_size_ = image_width_ * image_height_ * 2;
 	}
+
+	if (mode == PIXEL_INFO) {
+		memcpy(modified_image_buffer_, image_buffer_, collected_image_total_length_);
+		image_width_ = kEffectiveImageWidth;
+		image_height_ = kEffectiveImageHeight;
+		modified_raw_data_size_ = image_width_ * image_height_ * 4;
+	}
+
 }
 
 /*
@@ -507,6 +528,7 @@ void ImageProcessing::ShowImageProcessOptions(void) {
 	cout << "5) Draw by python(modified)" << endl;
 	cout << "6) Save by numpy format 16bit(modified)" << endl;
 	cout << "7) Save in bmp format(cut off)" << endl;
+	cout << "8) Save pixel info" << endl;
 	cout << "x) Go to previous menu" << endl;
 }
 

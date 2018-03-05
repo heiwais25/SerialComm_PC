@@ -69,6 +69,7 @@ const enum ImageType {
 	RAW_IMAGE = 0,
 	MODIFIED_IMAGE = 1,
 	CUT_OFF_IMAGE,
+	PIXEL_INFO,
 };
 
 const enum CollectedImageFormat {
@@ -133,6 +134,7 @@ class ImageProcessing {
 		void SetImageTotalLength(unsigned int image_total_length);
 		void InitImageBuffer(void);
 		void SetImageType(CollectedImageFormat type);
+		void SavePixelData();
 
 		// It needs to be replaced by python extension code
 		void PlotInPython(void);
