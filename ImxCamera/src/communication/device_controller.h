@@ -34,8 +34,9 @@ public:
 	void SetCameraParamsValue(void);
 
 
-	void SetCameraFineSettingOption(void);
-	void ChooseFindSetting(void);
+	
+
+	void ChangeCameraOption(void);
 	void SetCDSGain(void);
 	void SetVGAGain(void);
 	void SetBlackLevel(void);
@@ -49,6 +50,7 @@ public:
 	void CollectPackedImageData(void);
 	void CollectPNGImageData(void);
 	void SetLEDPeriod(void);
+	void SetADCMinimum(void);
 	void SendShortValue(BYTE command, int value);
 	void SetNumberOfPicture(void);
 
@@ -62,6 +64,7 @@ public:
 	void TurnOnLED(void);
 	void TurnOffLED(void);
 	void BlankLED(void);
+	CollectedImageFormat GetCorrectImgFormat(unsigned int dataTotalLength, BYTE command);
 
 	void ShowTestOptions(void);
 	void ShowEchoTestOptions(void);
@@ -78,7 +81,7 @@ private:
 
 	WORD image_piece_number_;
 	WORD received_packet_data_length;
-	
+	int imgByteOrder;
 	ImageProcessing * pImageProcessing_;
 	
 };

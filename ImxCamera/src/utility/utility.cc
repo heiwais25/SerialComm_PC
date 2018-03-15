@@ -127,10 +127,12 @@ int DrawPercentageArrow(int parts_length, int total_length) {
 	return 0;
 }
 
-/*
-	Description : Wait until there are keyboard input and return the char input
-	Return      : (BYTE) keyboard_input
-*/
+/* ===================================================================================================
+	Description
+	- Wait until there are keyboard input and return the char input
+	Return      
+	- (BYTE) keyboard_input
+=================================================================================================== */
 BYTE GetOneChar() {
 	BYTE c;
 	while (1) {
@@ -138,4 +140,18 @@ BYTE GetOneChar() {
 			break;
 	}
 	return c;
+}
+
+
+/* ===================================================================================================
+	Description
+	- Convert word to vector<BYTE>.
+	Return
+	- (vector<BYTE>) vector including the word value
+=================================================================================================== */
+vector<BYTE> wordToByteVector(int a) {
+	if (a > 0xffff)
+		cout << "Plese use word value(4 bytes)" << endl;
+	vector<BYTE> ret = { (BYTE)(a & 0xff), (BYTE)((a >> 8) & 0xff)};
+	return ret;
 }

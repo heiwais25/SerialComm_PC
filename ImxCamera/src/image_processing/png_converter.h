@@ -13,7 +13,7 @@ typedef struct {
 	png_uint_32 current_pos;
 } MEMORY_READER_STATE;
 
-void DecodeImageData(std::vector<BYTE> & image_source, int & image_size);
+void DecodeImageData(std::vector<BYTE> & image_source);
 
 void GetImageWidthHeight(unsigned int & width, unsigned int & height);
 

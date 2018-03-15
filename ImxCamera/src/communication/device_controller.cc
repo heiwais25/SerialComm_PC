@@ -73,12 +73,7 @@ void DeviceController::CameraTest(void) {
 void DeviceController::DoControlCamera(void) {
 	ShowControlCameraOption();
 	BYTE c = GetOneChar();
-	/* while (1) {
-		if (c = GetOneCharKeyboardInput())
-			break;
-	} */
-	switch (c)
-	{
+	switch (c) {
 		case '1':
 			SendCommand(CAMERA_POWER_ON);
 			break;
@@ -92,7 +87,7 @@ void DeviceController::DoControlCamera(void) {
 			break;
 
 		case '4':
-			SetCameraFineSettingOption();
+			ChangeCameraOption();
 			break;
 
 		case 'x':
@@ -139,6 +134,7 @@ void DeviceController::DoImageTransmission(void) {
 			SendCommand(CAMERA_SEND_PIXEL_DEV);
 			break;
 
+
 		case 'x':
 			break;
 
@@ -160,16 +156,10 @@ Returns			:	void
 Date			:	
 
 ===============================================================================================================================================================================================================================================================*/
-void DeviceController::DoImageProcess(void) {
-	
+void DeviceController::DoImageProcess(void) {	
 	ShowImageProcessOption();
-	BYTE c;
-	while (1) {
-		if (c = GetOneCharKeyboardInput())
-			break;
-	}
-	switch (c)
-	{
+	BYTE c = GetOneChar();
+	switch (c) {
 		case '1':
 			SendCommand(PACK_IMAGE);
 			break;
@@ -202,7 +192,13 @@ void DeviceController::DoImageProcess(void) {
 			SendCommand(DELETE_LAST_NODE);
 			break;
 
+		case '9':
+			SendCommand(CONVERT_MEAN_PNG);
+			break;
 
+		case 'a':
+			SendCommand(CONVERT_DEV_PNG);
+			break;
 
 		case 'x':
 			break;
@@ -282,26 +278,7 @@ void DeviceController::ChooseCameraOperation(void) {
 
 // Fine setting of camera option list. These options are affecting when we capture the image
 
-/*
-	Decription
-	- It will set the period of one LED blink when we capture the image
-*/
-void DeviceController::SetLEDPeriod(void) {
-	cout << "Set LED Period time" << endl;
-	int setting_value = getValueLowerThanMaximum(4095);
-	SendShortValue(CAMERA_SET_LED_PERIOD, setting_value);
-}
 
-/*
-	Decription
-	- It will set the number of pictures to take
-	- It will be necessary to calculate the mean and deviation of each pixel or image
-*/
-void DeviceController::SetNumberOfPicture(void) {
-	cout << "Set Number of pictures to capture" << endl;
-	int setting_value = getValueLowerThanMaximum(4095);
-	SendShortValue(CAMERA_SET_NUMBER_OF_PICTURES, setting_value);
-}
 
 
 void DeviceController::SetImageToRead() {
@@ -317,66 +294,6 @@ void DeviceController::SetImageToRead() {
 }
 
 
-void DeviceController::SetCameraFineSettingOption(void) {
-	ShowFineSettingList();
-	ChooseFindSetting();
-}
-
-// /*
-//	Description
-//		- Capture previously set number of images and stack them to calculate the mean and average
-//		- There are options 
-//		1) Calculate each pixel's mean, dev 
-//		2) Calculate whole pixel's mean, dev
-//
-// */
-//void DeviceController::CaptureStackImages(void) {
-//
-//
-//}
-
-
-void DeviceController::ChooseFindSetting(void) {
-	BYTE c;
-	
-	
-	while (1) {
-		if (c = GetOneCharKeyboardInput())
-			break;
-	}
-	switch (c) {
-		case '1':
-			SetCDSGain();
-			break;
-
-		case '2':
-			SetVGAGain();
-			break;
-
-		case '3':
-			SetBlackLevel();
-			break;
-		
-		case '4':
-			SetExposureTime();
-			break;
-
-		case '5':
-			SetLEDPeriod();
-			break;
-
-		case '6':
-			SetNumberOfPicture();
-			break;
-
-		case 'x':
-			cout << "Exit choosing gain setting option" << endl;
-			return;
-
-		default:
-			break;
-	}
-}
 
 
 
@@ -425,21 +342,23 @@ void DeviceController::CheckEchoTest() {
 	cout << "Echo test Finish" << endl;
 }
 
-/*
-	Due to captured image is trasmitted sepearate packet, we need to collect image data and make it original one
-	To do this, we will use ImageProcessing class
-	steps	1) Check packet order(number)
-			2) AssembleImageData
-			3) If the transmission is finished, processing image else request next frame
-	This function will be continued until the image transmission is finished
-*/
+
+/* ===================================================================================================
+	Description
+	- Due to captured image is trasmitted sepearate packet, we need to collect image data and make it original one
+	- To do this, we will use ImageProcessing class
+	- steps	
+		1) Check packet order(number)
+		2) AssembleImageData
+		3) If the transmission is finished, processing image else request next frame
+	- This function will be continued until the image transmission is finished
+=================================================================================================== */
 void DeviceController::CollectImageData(void) {
 	// 1. Get packet number
 	unsigned short packet_number = (hReceivedPacket.number[1] << 8) + hReceivedPacket.number[0];
 	static unsigned int data_total_length = 0;
 	static unsigned int received_total_length_ = 0;
 	if (image_piece_number_ != packet_number) {
-
 		std::cerr << "The order of data is packet is wrong" << endl;
 		// ERROR HANDLING WHEN THE DATA IS CRASHED
 		return;
@@ -451,23 +370,8 @@ void DeviceController::CollectImageData(void) {
 	if (packet_number == 0) {
 		BYTE * data = hReceivedPacket.data;
 		data_total_length = (data[3] << 24) + (data[2] << 16) + (data[1] << 8) + data[0];
-
-		CollectedImageFormat img_format;
-		int raw_total_length = kCsiHorizontalResolution * kCsiVerticalResolution;
-		int cut_off_total_lentgh = kEffectiveImageWidth * kEffectiveImageHeight * 2;
-		int pixel_info_total_length = cut_off_total_lentgh * 2;
-		if (data_total_length == raw_total_length)
-			img_format = RAW_IMAGE_FORMAT;
-		else if (data_total_length == raw_total_length * 3 / 4)
-			img_format = PACKED_RAW_IMAGE_FORMAT;
-		else if (data_total_length == cut_off_total_lentgh)
-			img_format = CUT_OFF_IMAGE_FORMAT;
-		else if (data_total_length == pixel_info_total_length)
-			img_format = PIXEL_INFO_FORMAT;
-		else
-			img_format = PACKED_PNG_IMAGE_FORMAT;
-
-		pImageProcessing_->SetImageType(img_format);
+		auto img_format = GetCorrectImgFormat(data_total_length, hReceivedPacket.command);
+		pImageProcessing_->SetImgType(img_format);
 		pImageProcessing_->SetImageTotalLength(data_total_length);
 		system("cls");
 	}
@@ -486,6 +390,7 @@ void DeviceController::CollectImageData(void) {
 		system("cls");
 		return;
 	}
+
 	else {
 		received_total_length_ += received_packet_data_length;
 		cout << std::fixed;
@@ -497,84 +402,135 @@ void DeviceController::CollectImageData(void) {
 }
 
 
-/*===============================================================================================================================================================================================================================================================
 
-Name:				SetCameraParamsValue
+/* ===================================================================================================
+	Description
+	- Among the option of camera setting, choose one
+=================================================================================================== */
+void DeviceController::ChangeCameraOption(void) {
+	ShowFineSettingList();
+	BYTE c = GetOneChar();
+	switch (c) {
+	case '1':
+		SetCDSGain();
+		break;
 
-Description:		It will set camera params including cds, vga, black level and exposure time
+	case '2':
+		SetVGAGain();
+		break;
 
-Parameters:			void
+	case '3':
+		SetBlackLevel();
+		break;
 
-Returns:			void
+	case '4':
+		SetExposureTime();
+		break;
 
-Date:				2018-01-02
+	case '5':
+		SetLEDPeriod();
+		break;
 
-===============================================================================================================================================================================================================================================================*/
-void DeviceController::SetCameraParamsValue(void) {
+	case '6':
+		SetNumberOfPicture();
+		break;
 
-}
+	case '7':
+		SetADCMinimum();
+		break;
 
+	case 'x':
+		cout << "Exit choosing gain setting option" << endl;
+		return;
 
-
-/*
-	Set CDS Gain value which will be affecting to analog gain(0dB ~ 18dB)
-*/
-void DeviceController::SetCDSGain(void) {
-	BYTE c;
-	ShowCDSOption();
-	while (1) {
-		c = GetOneCharKeyboardInput();
-		if (isDecimalNumber(c)) {
-			c = toDecimalNumber(c);
-			if (c <= 7)
-				break;
-			else {
-				cout << "Choose in the option " << endl;
-				ShowCDSOption();
-				continue;
-			}
-		}
+	default:
+		break;
 	}
-	c -= 1;
-	SetSendingPacketInfo(0x00, CAMERA_SET_CDS_GAIN, 0x01, &c);
-	SendPacket();
 }
 
-/*
-	Set VGA Gain value which will be affecting to analog gain(0 ~ 1023)
-*/
+/* ===================================================================================================
+	Description
+	- Set CDS Gain value which will be affecting to analog gain(0dB ~ 18dB)
+	- Default is 6dB
+=================================================================================================== */
+void DeviceController::SetCDSGain(void) {
+	ShowCDSOption();
+	BYTE c = GetOneChar();
+	if (c < 0x31 || c > 0x39) {
+		cout << "Input correct menu" << endl;
+		return;
+	}
+	c -= 0x31;
+	SendShortValue(CAMERA_SET_CDS_GAIN, c);
+}
+
+
+/* ===================================================================================================
+	Description
+	- Set VGA Gain value which will be affecting to analog gain(0 ~ 1023)
+=================================================================================================== */
 void DeviceController::SetVGAGain(void) {
 	cout << "VGA setting will increase analog signal from CCD sensor in detail(default option : 255)" << endl;
-	int setting_value = getValueLowerThanMaximum(1024);
-	unsigned char value[2];
-	value[0] = setting_value & 0xff;
-	value[1] = (setting_value >> 8) & 0xff;
-	SetSendingPacketInfo(0x00, CAMERA_SET_VGA_GAIN, 0x02, value);
-	SendPacket();
+	SendShortValue(CAMERA_SET_VGA_GAIN, getValueLowerThanMaximum(1024));
 }
 
-/*
-	Set VGA Gain value which will be affecting digital level of black level(0 ~ 1023)
-*/
+/* ===================================================================================================
+	Description
+	- Set Black level value which will affect digital level of black level(0 ~ 4095)
+	- The black level is the value of black signal between each frame
+	=================================================================================================== */
 void DeviceController::SetBlackLevel(void) {
 	cout << "Set digital level as a black signal(default option : 492)" << endl;
-	int setting_value = getValueLowerThanMaximum(4095);
-	unsigned char value[2];
-	value[0] = setting_value & 0xff;
-	value[1] = (setting_value >> 8) & 0xff;
-	SetSendingPacketInfo(0x00, CAMERA_SET_BLACK_LEVEL, 0x02, value);
-	SendPacket();
+	SendShortValue(CAMERA_SET_BLACK_LEVEL, getValueLowerThanMaximum(4095));
 }
 
+/* ===================================================================================================
+	Description
+	- Set the exposure time of camera
+	- The maximum time is 3000 * (1/30s) = 100s
+=================================================================================================== */
 void DeviceController::SetExposureTime(void) {
 	cout << "Set Exposure Time (default is 1 : 1/30s)" << endl;
-	int setting_value = getValueLowerThanMaximum(3000);
-	unsigned char value[2];
-	value[0] = setting_value & 0xff;
-	value[1] = (setting_value >> 8) & 0xff;
-	SetSendingPacketInfo(0x00, CAMERA_SET_EXPOSURE_TIME, 0x02, value);
-	SendPacket();
+	SendShortValue(CAMERA_SET_EXPOSURE_TIME, getValueLowerThanMaximum(3000));
 }
+
+/* ===================================================================================================
+	Description
+	- It will set the period of one LED blink when we capture the image
+=================================================================================================== */
+void DeviceController::SetLEDPeriod(void) {
+	cout << "Set LED Period time" << endl;
+	SendShortValue(CAMERA_SET_LED_PERIOD, getValueLowerThanMaximum(4095));
+}
+
+/* ===================================================================================================
+	Description
+	- Set the minimum level of ADC which is the standard for digitizing the CCD input
+=================================================================================================== */
+void DeviceController::SetADCMinimum(void) {
+	cout << "Set the minimum level of ADC" << endl;
+	cout << "Candidates : 0x5020(20512), 0x6030(24624)" << endl;
+	cout << "Condition (High bytes = Low bytes + 0x30)" << endl;
+	int setting_value = getValueLowerThanMaximum(28480);
+	if ((setting_value >> 8) != ((setting_value & 0xff) + 0x30)) {
+		cout << "High byte needs to be Low byte + 0x30" << endl;
+		return;
+	}
+	SendShortValue(CAMERA_SET_ADC_MINIMUM, setting_value);
+}
+
+
+/* ===================================================================================================
+	Description
+	- It will set the number of pictures to take
+	- It will be necessary to calculate the mean and deviation of each pixel or image
+=================================================================================================== */
+void DeviceController::SetNumberOfPicture(void) {
+	cout << "Set Number of pictures to capture" << endl;
+	int setting_value = getValueLowerThanMaximum(4095);
+	SendShortValue(CAMERA_SET_NUMBER_OF_PICTURES, setting_value);
+}
+
 
 
 /*===================================================================================================================
@@ -623,13 +579,14 @@ void DeviceController::ShowFineSettingList() {
 	cout << "4) Set Exposure Time" << endl;
 	cout << "5) Set LED Period" << endl;
 	cout << "6) Set number of pictures to capture" << endl;
+	cout << "7) Set minimum level of ADC" << endl;
 	cout << "x) Back to previous menu" << endl;
 
 }
 
 void DeviceController::ShowCDSOption(void) {
 	SplitLine();
-	cout << "CDS will increase analog signal from CCD sensor(default option : 2)" << endl;
+	cout << "CDS will increase analog signal from CCD sensor(default option : 3)" << endl;
 	cout << "1) 0dB" << endl;
 	cout << "2) 3dB" << endl;
 	cout << "3) 6dB" << endl;
@@ -671,6 +628,8 @@ void DeviceController::ShowImageProcessOption(void) {
 	cout << "6) Read image data from emmc" << endl;
 	cout << "7) Show stored image list" << endl;
 	cout << "8) Delete last node" << endl;
+	cout << "9) Convert pixel mean to png" << endl;
+	cout << "a) Convert pixel dev to png" << endl;
 	cout << "x) Go to previous menu" << endl;
 }
 
@@ -695,3 +654,27 @@ void DeviceController::SendShortValue(BYTE command, int value) {
 	SetSendingPacketInfo(0x00, command, value_vec);
 	SendPacket();
 }
+
+
+/* ===================================================================================================
+	Description
+	- It will choose correct imgFormat depending on the dataTotalLength sent from device
+	Return
+	- (CollectedImageFormat) imgFormat
+=================================================================================================== */
+CollectedImageFormat DeviceController::GetCorrectImgFormat(unsigned int dataTotalLength, BYTE command) {
+	CollectedImageFormat imgFormat;
+	if (dataTotalLength == RAW_IMG_TOTAL_LENGTH)
+		imgFormat = RAW_IMAGE_FORMAT;
+	else if (dataTotalLength == PACKED_RAW_IMG_TOTAL_LENGTH)
+		imgFormat = PACKED_RAW_IMAGE_FORMAT;
+	else if (dataTotalLength == CUT_OFF_IMG_TOTAL_LENGTH)
+		imgFormat = CUT_OFF_IMAGE_FORMAT;
+	else if (dataTotalLength == PIXEL_INFO_TOTAL_LENGTH)
+		imgFormat = PIXEL_INFO_FORMAT;
+	else
+		imgFormat = PACKED_PNG_IMAGE_FORMAT;
+	
+	return imgFormat;
+}
+

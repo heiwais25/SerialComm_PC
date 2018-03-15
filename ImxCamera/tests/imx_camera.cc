@@ -29,7 +29,7 @@ int main() {
 			UnitTest_ImageProcessing(); 
 	}
 	else {
-		std::string port_number = "COM3";
+		std::string port_number = "COM4";
 		PacketProtocol * hController = new DeviceController(port_number);
 
 		//// Choose whether start communicate or other option

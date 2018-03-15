@@ -39,6 +39,7 @@ void ImageProcessing::UnpackImageData(void) {
 	int pixel_count = -1;
 	char check_one_pixel = 0;
 	int count = 0;
+	collected_image_total_length_ = image_width_from_png_ * image_height_from_png_;
 	int unpacked_image_length = collected_image_total_length_ % 3 == 0 ? (collected_image_total_length_ * 4) / 3 :
 											((collected_image_total_length_ - 2) * 4) / 3 + 2;
 	for (int i = 0; i < unpacked_image_length; i++) {
@@ -55,6 +56,7 @@ void ImageProcessing::UnpackImageData(void) {
 		}
 		check_one_pixel++;
 	}
+	collected_image_total_length_ = image_width_from_png_ * 4 / 3 * image_height_from_png_;
 }
 
 
@@ -73,8 +75,7 @@ Date:			2017-12-29
 ===============================================================================================================================================================================================================================================================*/
 void ImageProcessing::ImageModification(void) {
 	int image_buffer_size = 0;
-	switch (collected_image_type_)
-	{
+	switch (collected_image_type_) {
 		case RAW_IMAGE_FORMAT:
 			memcpy(image_buffer_, &collected_image_buffer_[0], collected_image_total_length_);
 			// Anything to do
@@ -88,20 +89,44 @@ void ImageProcessing::ImageModification(void) {
 			UnpackImageData();
 			break;
 
+		case PIXEL_INFO_FORMAT:
+			memcpy(image_buffer_, &collected_image_buffer_[0], collected_image_total_length_);
+			break;
+
 		case PACKED_PNG_IMAGE_FORMAT:
-			kHaveImageDimension = true;
-			image_buffer_size = collected_image_total_length_;
-			DecodeImageData(collected_image_buffer_, image_buffer_size);
+			DecodeImageData(collected_image_buffer_);
 			GetImageWidthHeight(image_width_from_png_, image_height_from_png_);
-			collected_image_total_length_ = image_buffer_size;
-			UnpackImageData();
-			collected_image_total_length_ = image_width_from_png_ * 4 / 3 * image_height_from_png_;
+			// Choose proper imgType among several options(1. real img, 2. pixel info)
+			// 1. Pixel info
+			if (image_width_from_png_ == kEffectiveImageWidth * 3 || image_width_from_png_ == kEffectiveImageWidth * 4) {
+				UnpackPixelInfo();
+			}
+			// 2. Image info
+			else {
+				UnpackImageData();
+			}
 			break;
 
 		default:
 			break;
 	}
 	cout << "Image modification finished" << endl;
+}
+
+
+void ImageProcessing::UnpackPixelInfo() {
+	if (image_width_from_png_ == kEffectiveImageWidth) return;
+	int width = image_width_from_png_, height = image_height_from_png_;
+	int oldCount = 0, newCount = 0;
+	while (oldCount < width * height) {
+		image_buffer_[newCount++] = collected_image_buffer_[oldCount++];
+		if ((newCount + 1) % 4 == 0) {
+			image_buffer_[newCount++] = 0;
+		}
+
+	}
+	collected_image_total_length_ = newCount;
+	cout << width << " x " << height << endl;
 }
 
 void ImageProcessing::ChooseImageProcessOption(void) {
@@ -116,8 +141,7 @@ void ImageProcessing::ChooseImageProcessOption(void) {
 		}
 
 		if (isDecimalNumber(c)) {
-			switch (c)
-			{
+			switch (c) {
 				case '1':
 					SaveInBitmapImage(RAW_IMAGE);
 					break;
@@ -155,7 +179,6 @@ void ImageProcessing::ChooseImageProcessOption(void) {
 			}
 		}
 	}
-	kHaveImageDimension = false;
 }
 
 /* =========================================================================================
@@ -171,7 +194,7 @@ void ImageProcessing::SavePixelData() {
 	Save the image data by bitmap format to see clearly
 	Due to easy approach, current bitmap is only using high 8bit
 */
-void ImageProcessing::SaveInBitmapImage(ImageType type) {
+void ImageProcessing::SaveInBitmapImage(ImgType type) {
 	set_image_size_(type);
 
 	fill_bmp_image_data_(type);
@@ -183,7 +206,7 @@ void ImageProcessing::SaveInBitmapImage(ImageType type) {
 	To deal with data more in detail, it is necessary to save data by raw format.
 	It will be used for other analysis tool
 */
-void ImageProcessing::SaveInRawFormat(ImageType type) {
+void ImageProcessing::SaveInRawFormat(ImgType type) {
 	set_image_size_(type);
 
 	write_raw_data_to_file(type);
@@ -204,10 +227,16 @@ void ImageProcessing::SaveInNumpyFormat(void) {
 	pPythonPlot_->DrawPlot(kPythonSaveNumpyFunction);
 }
 
+
 /*
 	Register image information to instance every time user set image processing option
 */
-void ImageProcessing::set_image_size_(ImageType mode) {
+
+/* ===================================================================================================
+	Description
+	- Set image size for each image type mode
+=================================================================================================== */
+void ImageProcessing::set_image_size_(ImgType mode) {
 	// TODO : Change this modified width
 	modified_width_ = kEffectiveImageWidth;
 
@@ -250,7 +279,7 @@ void ImageProcessing::set_image_size_(ImageType mode) {
 /*
 	Depending on the type of image type(default, modified), fill image data(high 8bit) to image buffer
 */
-void ImageProcessing::fill_bmp_image_data_(ImageType type) {
+void ImageProcessing::fill_bmp_image_data_(ImgType type) {
 	set_bmp_header_();
 	memcpy(bmp_image_data_, bmp_header_, kBmpHeaderSize);
 
@@ -542,7 +571,7 @@ void ImageProcessing::InitImageBuffer() {
 	collected_image_buffer_.clear();
 }
 
-void ImageProcessing::SetImageType(CollectedImageFormat type) {
+void ImageProcessing::SetImgType(CollectedImageFormat type) {
 	collected_image_type_ = type;
 }
 
@@ -598,7 +627,7 @@ void ImageProcessing::write_bmp_to_file(void) {
 	Write raw data carried in image buffer to file
 	file name is the format of day_hour_min_sec
 */
-void ImageProcessing::write_raw_data_to_file(ImageType type) {
+void ImageProcessing::write_raw_data_to_file(ImgType type) {
 	std::string file_name_str = GetFileNameDayHourMinSec();
 	file_name_str = output_dir + file_name_str;
 	std::ofstream raw_file;

@@ -54,6 +54,14 @@ const int kLeftGrayPixelWidth = 20;
 const int kRightGrayPixelWidth = 15;
 // So, the total gray + black region width is 56 = kCenterBlackLine
 
+
+// image length information of each image format
+const int RAW_IMG_TOTAL_LENGTH = kCsiHorizontalResolution * kCsiVerticalResolution;
+const int PACKED_RAW_IMG_TOTAL_LENGTH = RAW_IMG_TOTAL_LENGTH * 3 / 4;
+const int CUT_OFF_IMG_TOTAL_LENGTH = kEffectiveImageWidth * kEffectiveImageHeight * 2;
+const int PIXEL_INFO_TOTAL_LENGTH = CUT_OFF_IMG_TOTAL_LENGTH * 2;
+
+
 // There are cut image with this length. It seems there are some problem in sync. 
 // So, we need to cut this image and attach left side to main image part
 //const int kChoppedImage = 147;
@@ -65,7 +73,7 @@ const BYTE kaBmpHeader[] =
 0x00, 0x00, 0xec, 0xf7, 0x1b, 0x00, 0xc3, 0x0e, 0x00, 0x00, 0xc3, 0x0e, 0x00, 0x00, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-const enum ImageType {
+const enum ImgType {
 	RAW_IMAGE = 0,
 	MODIFIED_IMAGE = 1,
 	CUT_OFF_IMAGE,
@@ -78,6 +86,7 @@ const enum CollectedImageFormat {
 	PACKED_PNG_IMAGE_FORMAT = 2,
 	CUT_OFF_IMAGE_FORMAT = 3,
 	PIXEL_INFO_FORMAT = 4,
+	PIXEL_INFO_PNG_FORMAT = 5,
 };
 
 const enum ImageProcessOptionList {
@@ -102,6 +111,8 @@ class ImageProcessing {
 			image_width_from_png_(0),
 			image_height_from_png_(0)
 		{
+			imgHighBytes.reserve(CUT_OFF_IMG_TOTAL_LENGTH / 2);
+			imgLowBytes.reserve(CUT_OFF_IMG_TOTAL_LENGTH / 2);
 			memcpy(bmp_header_, kaBmpHeader, sizeof(kaBmpHeader));
 			original_width_ = kCsiHorizontalResolution / 2;
 			original_height_ = kCsiVerticalResolution;
@@ -115,25 +126,27 @@ class ImageProcessing {
 		
 
 
-		void set_image_size_(ImageType mode);
+		void set_image_size_(ImgType mode);
 		void set_bmp_header_(void);
 
-		void fill_bmp_image_data_(ImageType type);
+		void fill_bmp_image_data_(ImgType type);
 		void write_bmp_to_file(void);
-		void write_raw_data_to_file(ImageType type);
+		void write_raw_data_to_file(ImgType type);
 
 		void ImageModification(void);
 		void UnpackImageData(void);
+		void UnpackPixelInfo();
 
 		void ChooseImageProcessOption(void);
 		void ShowImageProcessOptions(void);
 
-		void SaveInRawFormat(ImageType type);
-		void SaveInBitmapImage(ImageType tpye);
+		void SaveInRawFormat(ImgType type);
+		void SaveInBitmapImage(ImgType tpye);
+
 
 		void SetImageTotalLength(unsigned int image_total_length);
 		void InitImageBuffer(void);
-		void SetImageType(CollectedImageFormat type);
+		void SetImgType(CollectedImageFormat type);
 		void SavePixelData();
 
 		// It needs to be replaced by python extension code
@@ -163,6 +176,8 @@ class ImageProcessing {
 
 		// Array containing default raw image data(2bytes per pixel)
 		std::vector<BYTE> collected_image_buffer_;
+		vector<BYTE> imgHighBytes, imgLowBytes;
+
 		BYTE image_buffer_[kImageBufferSize];
 
 		// Array containing modified raw image data excluding black and gray side(2bytes per pixel)

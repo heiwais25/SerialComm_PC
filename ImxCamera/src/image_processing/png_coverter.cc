@@ -14,7 +14,8 @@ void read_data_memory(png_structp png_ptr, png_bytep data, png_size_t length){
 	f->current_pos += length;
 }
 
-void DecodeImageData(std::vector<BYTE> & image_source, int & image_size) {
+void DecodeImageData(std::vector<BYTE> & image_source) {
+	int imgSize = image_source.size();
 	png_bytep png_buffer_ptr = (png_bytep)&image_source[0];
 	int number_to_check = 8;
 	int is_png = !png_sig_cmp(png_buffer_ptr, 0, number_to_check);
@@ -45,7 +46,7 @@ void DecodeImageData(std::vector<BYTE> & image_source, int & image_size) {
 	// Set the custom read routine
 	MEMORY_READER_STATE memory_reader_state;
 	memory_reader_state.buffer = png_buffer_ptr;
-	memory_reader_state.bufsize = (png_size_t)image_size;
+	memory_reader_state.bufsize = (png_size_t)imgSize;
 	memory_reader_state.current_pos = number_to_check;
 	png_set_read_fn(png_ptr, &memory_reader_state, read_data_memory);
 	png_set_sig_bytes(png_ptr, number_to_check);
@@ -89,7 +90,6 @@ void DecodeImageData(std::vector<BYTE> & image_source, int & image_size) {
 			image_source[wi + width * hi] = read_row_pointers[hi][wi];
 		}
 	}
-	image_size = width * height;
 
 	cout << "PNG TO BMP FIRST 100 PIXEL VALUE" << endl;;
 	for (int i = 0; i<100; i++) {

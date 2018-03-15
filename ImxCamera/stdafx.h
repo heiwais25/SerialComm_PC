@@ -6,6 +6,7 @@
 #include <tchar.h>
 #include <vector>
 #include <iostream>
+using std::copy;
 using std::vector;
 using std::cout;
 using std::endl;
