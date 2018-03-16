@@ -36,7 +36,7 @@ const int kLeftGray = 16;
 const int kBlakcPixelVariation = 10;
 
 // New version
-const int kCenterBlackLine = 56;
+const int kCenterBlackLine = 57;
 const int kRightImageWidth = 147;
 const int kTopBlack = 3;
 const int kBottomBlack = 38;
@@ -98,6 +98,12 @@ const enum ImageProcessOptionList {
 
 };
 
+typedef struct ImgFixInfoType {
+	int invalidPixelOffset;
+	int blackLineHorizontalOffset;
+} ImgFixInfo;
+
+
 class ImageProcessing {
 	public:
 		ImageProcessing()
@@ -126,7 +132,7 @@ class ImageProcessing {
 		
 
 
-		void set_image_size_(ImgType mode);
+		void setImgSize(ImgType mode);
 		void set_bmp_header_(void);
 
 		void fill_bmp_image_data_(ImgType type);

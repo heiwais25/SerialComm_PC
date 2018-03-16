@@ -186,7 +186,7 @@ void ImageProcessing::ChooseImageProcessOption(void) {
 	- Save pixel data like mean and deviation
 ========================================================================================= */
 void ImageProcessing::SavePixelData() {
-	set_image_size_(PIXEL_INFO);
+	setImgSize(PIXEL_INFO);
 	write_raw_data_to_file(PIXEL_INFO);
 }
 
@@ -195,7 +195,7 @@ void ImageProcessing::SavePixelData() {
 	Due to easy approach, current bitmap is only using high 8bit
 */
 void ImageProcessing::SaveInBitmapImage(ImgType type) {
-	set_image_size_(type);
+	setImgSize(type);
 
 	fill_bmp_image_data_(type);
 
@@ -207,7 +207,7 @@ void ImageProcessing::SaveInBitmapImage(ImgType type) {
 	It will be used for other analysis tool
 */
 void ImageProcessing::SaveInRawFormat(ImgType type) {
-	set_image_size_(type);
+	setImgSize(type);
 
 	write_raw_data_to_file(type);
 }
@@ -215,14 +215,14 @@ void ImageProcessing::SaveInRawFormat(ImgType type) {
 // todo....
 void ImageProcessing::PlotInPython(void) {
 	Sleep(700 /* ms */);
-	set_image_size_(MODIFIED_IMAGE);
+	setImgSize(MODIFIED_IMAGE);
 	pPythonPlot_->CopyRawImageData(modified_image_buffer_, modified_width_, modified_height_);
 	pPythonPlot_->DrawPlot(kPythonPlotFunction);
 }
 
 void ImageProcessing::SaveInNumpyFormat(void) {
 	Sleep(700 /* ms */);
-	set_image_size_(MODIFIED_IMAGE);
+	setImgSize(MODIFIED_IMAGE);
 	pPythonPlot_->CopyRawImageData(modified_image_buffer_, modified_width_, modified_height_);
 	pPythonPlot_->DrawPlot(kPythonSaveNumpyFunction);
 }
@@ -236,7 +236,7 @@ void ImageProcessing::SaveInNumpyFormat(void) {
 	Description
 	- Set image size for each image type mode
 =================================================================================================== */
-void ImageProcessing::set_image_size_(ImgType mode) {
+void ImageProcessing::setImgSize(ImgType mode) {
 	// TODO : Change this modified width
 	modified_width_ = kEffectiveImageWidth;
 
@@ -355,8 +355,8 @@ Returns:		(int)start offset of invalid image region
 
 ===============================================================================================================================================================================================================================================================*/
 int ImageProcessing::GetBlackLineStartPoint(void) {
-	set_image_size_(RAW_IMAGE);
-	
+	setImgSize(RAW_IMAGE);
+	ImgFixInfo imgFixInfo;
 	bool kIsBlackLine = false;
 	int black_pixel_count = 0;
 	int original_image_width = image_width_;
@@ -379,27 +379,27 @@ int ImageProcessing::GetBlackLineStartPoint(void) {
 			kIsBlackLine = true;
 			black_pixel_count++;
 		}
-
-	
-
-		//if (kIsBlackLine && high_byte >= 0x20) {
-		if (kIsBlackLine && black_pixel_count == 20) {
+		else {
 			kIsBlackLine = false;
-			if (black_pixel_count == kBlackPixelWidth - 1) {
-				// Sometime, the last pixel value in black line is larger than 0x5
-				// Because first 20 pixel value should be 0, so it is okay to check first 20 pixels
-				black_pixel_start_pixel = hi + 1 - kBlackPixelWidth;
-				break;
-			}
-			else {
-				black_pixel_count = 0;
-			}
+			black_pixel_count = 0;
+		}
+	
+		//if (kIsBlackLine && high_byte >= 0x20) {
+		if (kIsBlackLine && black_pixel_count == kBlackPixelWidth - 1) {
+			kIsBlackLine = false;
+			black_pixel_start_pixel = hi + 2 - kBlackPixelWidth;
+			break;
 		}
 	}
+	for (int i = 0; i<kBlackPixelWidth; i++)
+		printf("%02x ", image_buffer_[(black_pixel_start_pixel + i) * 2 + sample_vi * original_image_width * 2 + 1]);
+	printf("\n");
 
 	// invalid_pixel_offset_ : Offset of gray+black pixel
 	invalid_pixel_offset_ = black_pixel_start_pixel - kLeftGrayPixelWidth;
 	cout << "Invalid pixel offset : " << invalid_pixel_offset_ << endl;
+	imgFixInfo.blackLineHorizontalOffset = black_pixel_start_pixel;
+	imgFixInfo.invalidPixelOffset = invalid_pixel_offset_;
 	return black_pixel_start_pixel;
 }
 
@@ -502,8 +502,8 @@ void ImageProcessing::ApplyCutEachSide(void) {
 	int chopped_image_horizontal_offset = GetChoppedImageOffset();
 
 	// 1. Find the vertical offset of first black line
-	int black_pixel_vertical_offset = GetBlackPixelHeightFromBottom((invalid_pixel_offset_ + 5)*2);
-
+	int black_pixel_vertical_offset = GetBlackPixelHeightFromBottom((invalid_pixel_offset_ + kLeftGrayPixelWidth + 5)*2);
+	cout << "Vertical offset : " << black_pixel_vertical_offset << endl;
 	// 2. Calculate the vertical offset of chopped image
 	//    Usually, the difference between both line is 13
 	int chopped_image_vertical_offset = black_pixel_vertical_offset + 13;
