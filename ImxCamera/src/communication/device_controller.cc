@@ -134,6 +134,9 @@ void DeviceController::DoImageTransmission(void) {
 			SendCommand(CAMERA_SEND_PIXEL_DEV);
 			break;
 
+		case '9':
+			SendCommand(CAMERA_SEND_PIXEL_LOG);
+			break;
 
 		case 'x':
 			break;
@@ -315,6 +318,15 @@ void DeviceController::DoCommand(void) {
 			CheckEchoTest();
 			break;
 
+		case CAMERA_SEND_PIXEL_LOG:
+			pImageProcessing_->SetImgType(PIXEL_LOG_FORMAT);
+			pImageProcessing_->SetImageTotalLength(received_packet_data_length);
+			pImageProcessing_->AssembleImageData(hReceivedPacket.data, received_packet_data_length);
+			pImageProcessing_->ImageModification();
+			pImageProcessing_->ChooseImageProcessOption();
+			pImageProcessing_->InitImageBuffer();
+			break;
+
 		case CAMERA_SEND_CAPTURED_IMAGE: // Because the image packet is seperated, we need to collect this image pieces
 		case CAMERA_SEND_PACKED_DATA:
 		case CAMERA_SEND_PNG:
@@ -329,6 +341,7 @@ void DeviceController::DoCommand(void) {
 			break;
 	}
 }
+
 
 
 void DeviceController::CheckEchoTest() {
@@ -615,6 +628,7 @@ void DeviceController::ShowImageTransmissionOption(void) {
 	cout << "6) Send last activated mode" << endl;
 	cout << "7) Send Image pixel mean" << endl;
 	cout << "8) Send Image pixel dev" << endl;
+	cout << "9) Send pixel save information" << endl;
 	cout << "x) Go to previous menu" << endl;
 }
 

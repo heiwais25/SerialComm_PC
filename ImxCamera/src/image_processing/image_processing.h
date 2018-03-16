@@ -87,6 +87,7 @@ const enum CollectedImageFormat {
 	CUT_OFF_IMAGE_FORMAT = 3,
 	PIXEL_INFO_FORMAT = 4,
 	PIXEL_INFO_PNG_FORMAT = 5,
+	PIXEL_LOG_FORMAT,
 };
 
 const enum ImageProcessOptionList {
@@ -115,7 +116,8 @@ class ImageProcessing {
 			minimum_value_(255),
 			kHaveImageDimension(0),
 			image_width_from_png_(0),
-			image_height_from_png_(0)
+			image_height_from_png_(0),
+			kIsPixelLog(false)
 		{
 			imgHighBytes.reserve(CUT_OFF_IMG_TOTAL_LENGTH / 2);
 			imgLowBytes.reserve(CUT_OFF_IMG_TOTAL_LENGTH / 2);
@@ -142,6 +144,8 @@ class ImageProcessing {
 		void ImageModification(void);
 		void UnpackImageData(void);
 		void UnpackPixelInfo();
+
+		void SavePixelLog();
 
 		void ChooseImageProcessOption(void);
 		void ShowImageProcessOptions(void);
@@ -216,6 +220,7 @@ class ImageProcessing {
 		CollectedImageFormat collected_image_type_;
 		BYTE minimum_value_;
 		int invalid_pixel_offset_;
+		int kIsPixelLog;
 
 		BYTE kHaveImageDimension;
 };

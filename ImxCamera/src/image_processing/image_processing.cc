@@ -81,6 +81,11 @@ void ImageProcessing::ImageModification(void) {
 			// Anything to do
 			break;
 
+		case PIXEL_LOG_FORMAT:
+			memcpy(image_buffer_, &collected_image_buffer_[0], collected_image_total_length_);
+			kIsPixelLog = true;
+			break;
+
 		case CUT_OFF_IMAGE_FORMAT:
 			memcpy(image_buffer_, &collected_image_buffer_[0], collected_image_total_length_);
 			break;
@@ -129,7 +134,30 @@ void ImageProcessing::UnpackPixelInfo() {
 	cout << width << " x " << height << endl;
 }
 
+
+/* =======================================================================================================
+	Description
+	- It will save pixel log that recorded 12 pixel individually
+=========================================================================================================*/
+void ImageProcessing::SavePixelLog(void) {
+	std::string file_name_str = GetFileNameDayHourMinSec();
+	file_name_str = output_dir + file_name_str;
+	std::ofstream raw_file;
+	raw_file.open(file_name_str, std::ios::binary);
+
+	raw_file.write((const char *)image_buffer_, collected_image_total_length_);
+
+	cout << "Saved Pixel Log : " << file_name_str << "\tFile size : " << collected_image_total_length_ << endl;
+	raw_file.close();
+	kIsPixelLog = false;
+}
+
 void ImageProcessing::ChooseImageProcessOption(void) {
+	if (kIsPixelLog) {
+		SavePixelLog();
+		return;
+	}
+
 	BYTE c;
 	ShowImageProcessOptions();
 	while (1) {

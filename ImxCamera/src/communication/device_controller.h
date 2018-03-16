@@ -42,6 +42,7 @@ public:
 	void SetBlackLevel(void);
 	void SetExposureTime(void);
 	void SetImageToRead(void);
+	void SavePixelLog();
 
 	virtual void DoCommand(void);
 
