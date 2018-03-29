@@ -288,12 +288,6 @@ void DeviceController::SetImageToRead() {
 	cout << "Select the position of image stored at EMMC" << endl;
 	int setting_value = getValueLowerThanMaximum(1024);
 	SendShortValue(READ_IMAGE, setting_value);
-
-	/*unsigned char value[2];
-	value[0] = setting_value & 0xff;
-	value[1] = (setting_value >> 8) & 0xff;
-	SetSendingPacketInfo(0x00, READ_IMAGE, 0x02, value);
-	SendPacket();*/
 }
 
 

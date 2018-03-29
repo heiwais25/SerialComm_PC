@@ -176,7 +176,7 @@ void ImageProcessing::ChooseImageProcessOption(void) {
 
 				case '2':
 					SaveInBitmapImage(MODIFIED_IMAGE);
-					break;
+					break; 
 
 				case '3':
 					SaveInRawFormat(RAW_IMAGE);
