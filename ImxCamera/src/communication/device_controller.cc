@@ -90,6 +90,10 @@ void DeviceController::DoControlCamera(void) {
 			ChangeCameraOption();
 			break;
 
+		case '5':
+			SendCommand(CAMERA_CAPTURE_AND_TRANSMIT);
+			break;
+
 		case 'x':
 			break;
 
@@ -609,6 +613,7 @@ void DeviceController::ShowControlCameraOption(void) {
 	cout << "2) Camera Power Off" << endl;
 	cout << "3) Camera capture image" << endl;
 	cout << "4) Camera set camera option" << endl;
+	cout << "5) Camera capture image at current setting" << endl;
 	cout << "x) Go to previous menu" << endl;
 }
 
