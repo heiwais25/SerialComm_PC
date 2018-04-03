@@ -9,9 +9,11 @@
 
 #include "python_plot.h"
 #include "png_converter.h"
+#include "device_controller.h"
 #include "png.h"
 // Question:
 // 1. 꼭 정해진 resolution에서만 해야 하는가?
+
 
 
 const std::string output_dir = "output/";
@@ -153,7 +155,6 @@ class ImageProcessing {
 		void SaveInRawFormat(ImgType type);
 		void SaveInBitmapImage(ImgType tpye);
 
-
 		void SetImageTotalLength(unsigned int image_total_length);
 		void InitImageBuffer(void);
 		void SetImgType(CollectedImageFormat type);
@@ -221,6 +222,7 @@ class ImageProcessing {
 		BYTE minimum_value_;
 		int invalid_pixel_offset_;
 		int kIsPixelLog;
+		int kIsAnalysisParams;
 
 		BYTE kHaveImageDimension;
 };

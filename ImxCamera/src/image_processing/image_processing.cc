@@ -135,6 +135,7 @@ void ImageProcessing::UnpackPixelInfo() {
 }
 
 
+
 /* =======================================================================================================
 	Description
 	- It will save pixel log that recorded 12 pixel individually
@@ -157,7 +158,7 @@ void ImageProcessing::ChooseImageProcessOption(void) {
 		SavePixelLog();
 		return;
 	}
-
+	
 	BYTE c;
 	ShowImageProcessOptions();
 	while (1) {

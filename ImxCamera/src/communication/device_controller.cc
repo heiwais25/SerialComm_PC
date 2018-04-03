@@ -94,6 +94,10 @@ void DeviceController::DoControlCamera(void) {
 			SendCommand(CAMERA_CAPTURE_AND_TRANSMIT);
 			break;
 
+		case '6':
+			captureAndSaveContinuously();
+			break;
+
 		case 'x':
 			break;
 
@@ -101,6 +105,78 @@ void DeviceController::DoControlCamera(void) {
 			break;
 	}
 }
+
+int DeviceController::getParamMax(int param) {
+	int ret = param == '1' ? 8 : param == '2' ? 1024 : param == '7' ? 28480 : 4096;
+	return ret;
+}
+
+int DeviceController::setCameraAnalysisParams() {
+	int ret = 0;
+	// 1. Choose params
+	ShowFineSettingList();
+	cameraAnalysisParams.param = GetOneChar();
+
+	// 2. Start value
+	cout << "Set the start value" << endl;
+	int paramMax, startVal;
+	paramMax = getParamMax(cameraAnalysisParams.param);
+	cameraAnalysisParams.startVal = getValueLowerThanMaximum(paramMax);
+
+	// 3. Set step value
+	cout << "Set the step value" << endl;
+	cameraAnalysisParams.stepVal = getValueLowerThanMaximum(paramMax);
+	
+	// 4. Set step num
+	cout << "Set step num" << endl;
+	cameraAnalysisParams.stepNum = getValueLowerThanMaximum(paramMax);
+
+	if (cameraAnalysisParams.startVal +
+		cameraAnalysisParams.stepVal * cameraAnalysisParams.stepNum < paramMax) {
+		cout << "Err : setting analysis param is wrong" << endl;
+		return ret;
+	}
+	ret = 1;
+	return ret;
+}
+
+
+void DeviceController::captureAndSaveContinuously() {
+	static int count = 0;
+	// 1. Set camera parameters
+	if(count == 0){
+		kisAnalyzingParam = true;
+		int ret = setCameraAnalysisParams();
+		if (ret == 0) {
+			return;
+		}
+	}
+	
+	
+	// 2. Send parameter
+	BYTE byteParams[8];
+	byteParams[0] = cameraAnalysisParams.param & 0xff;
+	byteParams[1] = (cameraAnalysisParams.param >> 8) & 0xff;
+	byteParams[2] = (cameraAnalysisParams.startVal) & 0xff;
+	byteParams[3] = (cameraAnalysisParams.startVal >> 8) & 0xff;
+	byteParams[4] = (cameraAnalysisParams.stepVal) & 0xff;
+	byteParams[5] = (cameraAnalysisParams.stepVal >> 8) & 0xff;
+	byteParams[6] = (cameraAnalysisParams.stepNum) & 0xff;
+	byteParams[7] = (cameraAnalysisParams.stepNum >> 8) & 0xff;
+
+	SetSendingPacketInfo(0, CAMERA_PARAM_ANALYSIS, 8, byteParams);
+	SendPacket();
+	count++;
+
+
+	// 3. Init and finish this process
+	if (count == cameraAnalysisParams.stepNum) {
+		count = 0;
+		kisAnalyzingParam = false;
+	}
+
+}
+
 
 void DeviceController::DoImageTransmission(void) {
 	ShowImageTransmissionOption();
@@ -691,3 +767,13 @@ CollectedImageFormat DeviceController::GetCorrectImgFormat(unsigned int dataTota
 	return imgFormat;
 }
 
+
+void DeviceController::initCameraParams() {
+	cameraParams.cds_gain = 2;
+	cameraParams.vga_gain = 15;
+	cameraParams.black_level = 0;
+	cameraParams.adc_minimum = 0x5020;
+	cameraParams.led_period = 0;
+	cameraParams.exposure_time = 1;
+	cameraParams.vga_gain = 1;
+}
