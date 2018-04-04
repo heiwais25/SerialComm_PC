@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "utility.h"
 
-
 void ChangeColor(AnsiColorCode vec_color_code);
 
 // Return keyboard input spontaneuously
@@ -154,4 +153,42 @@ vector<BYTE> wordToByteVector(int a) {
 		cout << "Plese use word value(4 bytes)" << endl;
 	vector<BYTE> ret = { (BYTE)(a & 0xff), (BYTE)((a >> 8) & 0xff)};
 	return ret;
+}
+
+/* ===================================================================================================
+	Description
+	- It will read param set from csv file 
+	- The default paramNum is 6
+	Return
+	- (vector< map<string, int> >) Return the vector includes paramName and paramVal
+=================================================================================================== */
+queue < map<string, int> > getParamFromCSV(string fileName, int paramNum) {
+	queue< map<string, int> > retQueue;
+	ifstream infile(fileName);
+	int iter = 0;
+	string line;
+	vector<int> invidParamVal(paramNum);
+	vector<string> paramName(paramNum);
+
+	string oneParam;
+	while (getline(infile, line)) {
+		map<string, int> retMap;
+		stringstream lineStream(line);
+		// Get param name
+		if (iter == 0) {
+			for (int i = 0; i < paramNum; i++)
+				lineStream >> paramName[i];
+		}
+		// Get param value
+		else {
+			for (int i = 0; i < paramNum - 1; i++)
+				lineStream >> invidParamVal[i];
+			lineStream >> hex >> invidParamVal[paramNum - 1];
+			for (int i = 0; i < paramNum; i++)
+				retMap.insert(pair<string, int>(paramName[i], invidParamVal[i]));
+			retQueue.push(retMap);
+		}
+		iter++;
+	}
+	return retQueue;
 }

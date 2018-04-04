@@ -2,6 +2,7 @@
 #include "packet_protocol.h"
 #include "image_processing.h"
 #include "utility.h"
+#include <queue>
 
 const enum CAMERA_PARAMS {
 	CDS_GAIN = 0,
@@ -10,14 +11,19 @@ const enum CAMERA_PARAMS {
 	EXPOSRUE_TIME,
 };
 
+typedef struct LastCameraParamType {
+	string paramName;
+	int paramVal;
+	int count;
+} LastCameraParam;
+
 typedef struct CameraParamsType {
-	uint16_t cds_gain;
-	uint16_t vga_gain;
-	uint16_t black_level;
-	uint16_t exposure_time;
-	uint16_t num_pictures;
-	uint16_t adc_minimum;
-	uint16_t led_period;
+	uint16_t cds;
+	uint16_t vga;
+	uint16_t blackLevel;
+	uint16_t exposureTime;
+	uint16_t ledTime;
+	uint16_t adcMinimum;
 } CameraParams;
 
 typedef struct CameraAnalysisParamsType {
@@ -32,11 +38,13 @@ class DeviceController : public PacketProtocol {
 public:
 	DeviceController(Uart * user_hUart) : PacketProtocol(user_hUart), image_piece_number_(0), kisAnalyzingParam(false) {
 		pImageProcessing_ = new ImageProcessing();
+		paramsToSendNum = 0;
 		initCameraParams();
 	};
 
 	DeviceController(std::string port_number) : PacketProtocol(port_number), image_piece_number_(0), kisAnalyzingParam(false) {
 		pImageProcessing_ = new ImageProcessing();
+		paramsToSendNum = 0;
 		initCameraParams();
 	};
 	~DeviceController() {};
@@ -62,24 +70,22 @@ public:
 	void SetExposureTime(void);
 	void SetImageToRead(void);
 	void SavePixelLog();
+	vector<BYTE> DeviceController::copyParamsToVector(CameraParams params);
 
 	virtual void DoCommand(void);
 
 	void CheckEchoTest();
 	void CollectImageData(void);
-	void CollectPackedImageData(void);
-	void CollectPNGImageData(void);
 	void SetLEDPeriod(void);
 	void SetADCMinimum(void);
 	void SendShortValue(BYTE command, int value);
 	void SetNumberOfPicture(void);
 
-	int getParamMax(int param); 
-	int checkValidParam(int param, int startVal, int stepVal, int stepNum);
 
-	void captureAndSaveContinuously();
+	// Send camera params after reading it from paramSetInfo file
+	// It will capture to the same number of set in the file
+	void captureContinuously();
 	void initCameraParams();
-	void changeCameraParams();
 
 	void DoControlCamera(void);
 	void DoImageTransmission(void);
@@ -87,8 +93,6 @@ public:
 	void DoControlLED(void);
 
 	void ShowLEDOption(void);
-	void TurnOnLED(void);
-	void TurnOffLED(void);
 	void BlankLED(void);
 
 	void ShowTestOptions(void);
@@ -101,9 +105,10 @@ public:
 	void ShowImageTransmissionOption(void);
 	void ShowImageProcessOption(void);
 
-	int setCameraAnalysisParams();
 	int isAnalyzingParam() { return kisAnalyzingParam; };
 	CollectedImageFormat GetCorrectImgFormat(unsigned int dataTotalLength, BYTE command);
+	void DeviceController::saveLastCameraParam(int mode, int count);
+
 private:
 
 	WORD image_piece_number_;
@@ -111,6 +116,9 @@ private:
 	int imgByteOrder;
 	int kisAnalyzingParam;
 	ImageProcessing * pImageProcessing_;
-	CameraParams cameraParams;
+	CameraParams currentParams;
 	CameraAnalysisParams cameraAnalysisParams;
+	queue<map<string, int> > paramsQueue;
+	LastCameraParam lastCameraParam;
+	int paramsToSendNum;
 };

@@ -119,6 +119,17 @@ void ImageProcessing::ImageModification(void) {
 }
 
 
+void ImageProcessing::SetFileName(string paramName, int paramVal, int expVal, int count) {
+	string paramValStr = to_string(expVal);
+	if (paramName == "adcMinimum") {
+		stringstream stream;
+		stream << hex << paramVal;
+		paramValStr = "0x" + stream.str();
+	}
+	fileNameWithParam = "exp_" + to_string(expVal) + "_" + paramName + "_" + paramValStr + "_" + to_string(count);
+	cout << "File name : " << fileNameWithParam << endl;
+}
+
 void ImageProcessing::UnpackPixelInfo() {
 	if (image_width_from_png_ == kEffectiveImageWidth) return;
 	int width = image_width_from_png_, height = image_height_from_png_;
@@ -159,6 +170,15 @@ void ImageProcessing::ChooseImageProcessOption(void) {
 		return;
 	}
 	
+	if (fileNameWithParam.size() != 0) {
+		// save raw data
+		SaveInBitmapImage(MODIFIED_IMAGE);
+		SaveInRawFormat(MODIFIED_IMAGE);
+		fileNameWithParam = "";
+		initImageProcessOption();
+		return;
+	}
+
 	BYTE c;
 	ShowImageProcessOptions();
 	while (1) {
@@ -644,6 +664,9 @@ void ImageProcessing::write_bmp_to_file(void) {
 	file_name_str = output_dir + file_name_str;
 
 	std::ofstream bmp_file;
+	if (fileNameWithParam.size() != 0) {
+		file_name_str = output_dir + fileNameWithParam + ".bmp";
+	}
 	bmp_file.open(file_name_str, std::ios::binary);
 
 	bmp_file.write((const char *)bmp_image_data_, bmp_file_size_);
@@ -660,6 +683,9 @@ void ImageProcessing::write_raw_data_to_file(ImgType type) {
 	std::string file_name_str = GetFileNameDayHourMinSec();
 	file_name_str = output_dir + file_name_str;
 	std::ofstream raw_file;
+	if (fileNameWithParam.size() != 0) {
+		file_name_str = output_dir + fileNameWithParam;
+	}
 	raw_file.open(file_name_str, std::ios::binary);
 
 	const char * pRawData;

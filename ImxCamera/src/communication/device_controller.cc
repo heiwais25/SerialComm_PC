@@ -7,6 +7,7 @@ void DeviceController::PickAndSendCommand(void) {
 	BYTE c;
 	ShowTestOptions();
 	while (1) {
+
 		if (c = GetOneCharKeyboardInput()) {
 			if (c == 'x')
 				break;
@@ -74,107 +75,85 @@ void DeviceController::DoControlCamera(void) {
 	ShowControlCameraOption();
 	BYTE c = GetOneChar();
 	switch (c) {
-		case '1':
-			SendCommand(CAMERA_POWER_ON);
-			break;
+	case '1':
+		SendCommand(CAMERA_POWER_ON);
+		break;
 
-		case '2':
-			SendCommand(CAMERA_POWER_OFF);
-			break;
+	case '2':
+		SendCommand(CAMERA_POWER_OFF);
+		break;
 
-		case '3':
-			SendCommand(CAMERA_CAPTURE);
-			break;
+	case '3':
+		SendCommand(CAMERA_CAPTURE);
+		break;
 
-		case '4':
-			ChangeCameraOption();
-			break;
+	case '4':
+		ChangeCameraOption();
+		break;
 
-		case '5':
-			SendCommand(CAMERA_CAPTURE_AND_TRANSMIT);
-			break;
+	case '5':
+		SendCommand(CAMERA_CAPTURE_AND_TRANSMIT);
+		break;
 
-		case '6':
-			captureAndSaveContinuously();
-			break;
+	case '6':
+		captureContinuously();
+		break;
 
-		case 'x':
-			break;
+	case 'x':
+		break;
 
-		default:
-			break;
+	default:
+		break;
 	}
 }
 
-int DeviceController::getParamMax(int param) {
-	int ret = param == '1' ? 8 : param == '2' ? 1024 : param == '7' ? 28480 : 4096;
-	return ret;
-}
-
-int DeviceController::setCameraAnalysisParams() {
-	int ret = 0;
-	// 1. Choose params
-	ShowFineSettingList();
-	cameraAnalysisParams.param = GetOneChar();
-
-	// 2. Start value
-	cout << "Set the start value" << endl;
-	int paramMax, startVal;
-	paramMax = getParamMax(cameraAnalysisParams.param);
-	cameraAnalysisParams.startVal = getValueLowerThanMaximum(paramMax);
-
-	// 3. Set step value
-	cout << "Set the step value" << endl;
-	cameraAnalysisParams.stepVal = getValueLowerThanMaximum(paramMax);
-	
-	// 4. Set step num
-	cout << "Set step num" << endl;
-	cameraAnalysisParams.stepNum = getValueLowerThanMaximum(paramMax);
-
-	if (cameraAnalysisParams.startVal +
-		cameraAnalysisParams.stepVal * cameraAnalysisParams.stepNum < paramMax) {
-		cout << "Err : setting analysis param is wrong" << endl;
-		return ret;
-	}
-	ret = 1;
-	return ret;
-}
 
 
-void DeviceController::captureAndSaveContinuously() {
-	static int count = 0;
-	// 1. Set camera parameters
-	if(count == 0){
-		kisAnalyzingParam = true;
-		int ret = setCameraAnalysisParams();
-		if (ret == 0) {
+/*===============================================================================================================================================================================================================================================================
+
+Name			:	captureContinuously
+
+Description		:	Read camera parameter from paramSet file and send it to main board
+
+Parameters		:
+
+Returns			:	void
+
+Date			:
+
+===============================================================================================================================================================================================================================================================*/
+void DeviceController::captureContinuously() {
+	// 1. Read camera params from paramSet
+	int paramNum = 8;
+	if (paramsQueue.empty()) {
+		paramsQueue = getParamFromCSV("paramSet/paramSetInfo.prn", paramNum);
+		if (paramsQueue.empty()) {
+			cout << "No data in the paramSet" << endl;
 			return;
 		}
+
+		if (paramsQueue.front().size() != paramNum) {
+			cout << "Wrong reading function" << endl;
+			return;
+		}
+		paramsToSendNum = paramsQueue.size();
 	}
 	
-	
-	// 2. Send parameter
-	BYTE byteParams[8];
-	byteParams[0] = cameraAnalysisParams.param & 0xff;
-	byteParams[1] = (cameraAnalysisParams.param >> 8) & 0xff;
-	byteParams[2] = (cameraAnalysisParams.startVal) & 0xff;
-	byteParams[3] = (cameraAnalysisParams.startVal >> 8) & 0xff;
-	byteParams[4] = (cameraAnalysisParams.stepVal) & 0xff;
-	byteParams[5] = (cameraAnalysisParams.stepVal >> 8) & 0xff;
-	byteParams[6] = (cameraAnalysisParams.stepNum) & 0xff;
-	byteParams[7] = (cameraAnalysisParams.stepNum >> 8) & 0xff;
 
-	SetSendingPacketInfo(0, CAMERA_PARAM_ANALYSIS, 8, byteParams);
+	// 2. Copy params to currentParam
+	auto params = paramsQueue.front();
+	currentParams.cds = params["cds"];
+	currentParams.vga = params["vga"];
+	currentParams.blackLevel = params["blackLevel"];
+	currentParams.exposureTime = params["exposureTime"];
+	currentParams.ledTime = params["ledTime"];
+	currentParams.adcMinimum = params["adcMinimum"];
+
+	auto const pCurrentParams = reinterpret_cast<BYTE*>(&currentParams);
+	vector<BYTE> paramToSend(pCurrentParams, pCurrentParams + sizeof(currentParams));
+	SetSendingPacketInfo(0, CAMERA_SEND_CAMERA_PARAMS, paramToSend);
 	SendPacket();
-	count++;
-
-
-	// 3. Init and finish this process
-	if (count == cameraAnalysisParams.stepNum) {
-		count = 0;
-		kisAnalyzingParam = false;
-	}
-
+	saveLastCameraParam(params["mode"], params["count"]);
 }
 
 
@@ -445,6 +424,7 @@ void DeviceController::CollectImageData(void) {
 	unsigned short packet_number = (hReceivedPacket.number[1] << 8) + hReceivedPacket.number[0];
 	static unsigned int data_total_length = 0;
 	static unsigned int received_total_length_ = 0;
+	static int fileCount = 0;
 	if (image_piece_number_ != packet_number) {
 		std::cerr << "The order of data is packet is wrong" << endl;
 		// ERROR HANDLING WHEN THE DATA IS CRASHED
@@ -458,6 +438,17 @@ void DeviceController::CollectImageData(void) {
 		BYTE * data = hReceivedPacket.data;
 		data_total_length = (data[3] << 24) + (data[2] << 16) + (data[1] << 8) + data[0];
 		auto img_format = GetCorrectImgFormat(data_total_length, hReceivedPacket.command);
+
+		// The image is taken by sending camera parameters
+		if (paramsQueue.empty() == 0) {
+			cout << "count : " << lastCameraParam.count;
+			pImageProcessing_->SetFileName(lastCameraParam.paramName, lastCameraParam.paramVal, currentParams.exposureTime, fileCount++);
+			if (fileCount == lastCameraParam.count) {
+				fileCount = 0;
+				paramsQueue.pop();
+			}
+		}
+
 		pImageProcessing_->SetImgType(img_format);
 		pImageProcessing_->SetImageTotalLength(data_total_length);
 		system("cls");
@@ -475,6 +466,11 @@ void DeviceController::CollectImageData(void) {
 		pImageProcessing_->InitImageBuffer();
 		image_piece_number_ = received_total_length_ = 0;
 		system("cls");
+		if (paramsQueue.empty() == 0) {
+			Sleep(1000);
+			captureContinuously();
+		}
+
 		return;
 	}
 
@@ -690,6 +686,7 @@ void DeviceController::ShowControlCameraOption(void) {
 	cout << "3) Camera capture image" << endl;
 	cout << "4) Camera set camera option" << endl;
 	cout << "5) Camera capture image at current setting" << endl;
+	cout << "6) Send camera parameter which is set in cameraParam file" << endl;
 	cout << "x) Go to previous menu" << endl;
 }
 
@@ -769,11 +766,44 @@ CollectedImageFormat DeviceController::GetCorrectImgFormat(unsigned int dataTota
 
 
 void DeviceController::initCameraParams() {
-	cameraParams.cds_gain = 2;
-	cameraParams.vga_gain = 15;
-	cameraParams.black_level = 0;
-	cameraParams.adc_minimum = 0x5020;
-	cameraParams.led_period = 0;
-	cameraParams.exposure_time = 1;
-	cameraParams.vga_gain = 1;
+	currentParams.cds = 2;
+	currentParams.vga = 15;
+	currentParams.blackLevel = 0;
+	currentParams.adcMinimum = 0x5020;
+	currentParams.ledTime = 0;
+	currentParams.exposureTime = 1;
+}
+
+
+vector<BYTE> DeviceController::copyParamsToVector(CameraParams params) {
+	vector<BYTE> retVec(sizeof(params));
+	retVec[0] = params.cds & 0xff;
+	retVec[1] = (params.cds >> 8) & 0xff;
+	retVec[2] = params.vga & 0xff;
+	retVec[3] = (params.vga >> 8) & 0xff;
+	retVec[4] = params.blackLevel & 0xff;
+	retVec[5] = (params.blackLevel >> 8) & 0xff;
+	retVec[6] = params.exposureTime & 0xff;
+	retVec[7] = (params.exposureTime >> 8) & 0xff;
+	retVec[8] = params.ledTime & 0xff;
+	retVec[9] = (params.ledTime >> 8) & 0xff;
+	retVec[10] = params.adcMinimum & 0xff;
+	retVec[11] = (params.adcMinimum >> 8) & 0xff;
+	return retVec;
+}
+
+void DeviceController::saveLastCameraParam(int mode, int count) {
+	if (mode < 0 || mode > 5) {
+		cout << mode << " is not valid option" << endl;
+		return;
+	}
+	if (mode == 0) lastCameraParam.paramName = "cds";
+	else if (mode == 1) lastCameraParam.paramName = "vga";
+	else if (mode == 2) lastCameraParam.paramName = "blackLevel";
+	else if (mode == 3) lastCameraParam.paramName = "exposureTime";
+	else if (mode == 4) lastCameraParam.paramName = "ledTime";
+	else if (mode == 5) lastCameraParam.paramName = "adcMinimum";
+	lastCameraParam.paramVal = paramsQueue.front()[lastCameraParam.paramName];
+	lastCameraParam.count = count;
+	return;
 }

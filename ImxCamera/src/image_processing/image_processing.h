@@ -9,10 +9,8 @@
 
 #include "python_plot.h"
 #include "png_converter.h"
-#include "device_controller.h"
 #include "png.h"
-// Question:
-// 1. 꼭 정해진 resolution에서만 해야 하는가?
+
 
 
 
@@ -119,7 +117,8 @@ class ImageProcessing {
 			kHaveImageDimension(0),
 			image_width_from_png_(0),
 			image_height_from_png_(0),
-			kIsPixelLog(false)
+			kIsPixelLog(false),
+			fileNameWithParam("")
 		{
 			imgHighBytes.reserve(CUT_OFF_IMG_TOTAL_LENGTH / 2);
 			imgLowBytes.reserve(CUT_OFF_IMG_TOTAL_LENGTH / 2);
@@ -180,6 +179,8 @@ class ImageProcessing {
 		int GetChoppedImageLength(int horizontal_offset);
 		void ApplyCutEachSide();
 
+		// If specific parameter is set, it will save the param info to use for file name
+		void SetFileName(string paramName, int paramVal, int expVal, int count);
 
 	private:
 
@@ -198,7 +199,7 @@ class ImageProcessing {
 		BYTE bmp_image_data_[kImageBufferSize];
 
 		FILE * hWriteFile_;
-
+		string fileNameWithParam;
 		unsigned int bmp_file_size_;
 
 		unsigned int image_buffer_count_;

@@ -67,6 +67,7 @@ void PacketProtocol::ScanPort(void) {
 		slave_status = CheckReceivedPacket(data_from_device);
 
 		if(slave_status == SLAVE_SLEEP){ 
+
 			if (user_input = GetOneCharKeyboardInput()) {
 				if (user_input == kCommandKey) break; // Want to send packet
 				else pUart->Write(user_input);        // Just send charactor
