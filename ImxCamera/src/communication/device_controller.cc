@@ -96,7 +96,7 @@ void DeviceController::DoControlCamera(void) {
 		break;
 
 	case '6':
-		captureContinuously();
+		captureAndSendDataContinuously();
 		break;
 
 	case 'x':
@@ -106,12 +106,42 @@ void DeviceController::DoControlCamera(void) {
 		break;
 	}
 }
+//
+//void DeviceController::captureAndSendAnalyzedDataContinuously() {
+//	// 1. Read camera params from paramSet
+//	int paramNum = 8;
+//	if (paramsQueue.empty()) {
+//		paramsQueue = getParamFromCSV("paramSet/paramSetInfo.prn", paramNum);
+//		if (paramsQueue.empty()) {
+//			cout << "No data in the paramSet" << endl;
+//			return;
+//		}
+//
+//		if (paramsQueue.front().size() != paramNum) {
+//			cout << "Wrong reading function" << endl;
+//			return;
+//		}
+//		paramsToSendNum = paramsQueue.size();
+//	}
+//
+//	// 2. Copy params to currentParam
+//	auto params = paramsQueue.front();
+//	currentParams.cds = params["cds"];
+//	currentParams.vga = params["vga"];
+//	currentParams.blackLevel = params["blackLevel"];
+//	currentParams.exposureTime = params["exposureTime"];
+//	currentParams.ledTime = params["ledTime"];
+//	currentParams.adcMinimum = params["adcMinimum"];
+//
+//
+//}
+
 
 
 
 /*===============================================================================================================================================================================================================================================================
 
-Name			:	captureContinuously
+Name			:	captureAndSendDataContinuously
 
 Description		:	Read camera parameter from paramSet file and send it to main board
 
@@ -122,9 +152,9 @@ Returns			:	void
 Date			:
 
 ===============================================================================================================================================================================================================================================================*/
-void DeviceController::captureContinuously() {
+void DeviceController::captureAndSendDataContinuously() {
 	// 1. Read camera params from paramSet
-	int paramNum = 8;
+	int paramNum = 9;
 	if (paramsQueue.empty()) {
 		paramsQueue = getParamFromCSV("paramSet/paramSetInfo.prn", paramNum);
 		if (paramsQueue.empty()) {
@@ -148,10 +178,14 @@ void DeviceController::captureContinuously() {
 	currentParams.exposureTime = params["exposureTime"];
 	currentParams.ledTime = params["ledTime"];
 	currentParams.adcMinimum = params["adcMinimum"];
-
+	currentParams.numPictures = params["numPictures"];
+	cout << "numPictures : " << currentParams.numPictures << endl;
 	auto const pCurrentParams = reinterpret_cast<BYTE*>(&currentParams);
 	vector<BYTE> paramToSend(pCurrentParams, pCurrentParams + sizeof(currentParams));
-	SetSendingPacketInfo(0, CAMERA_SEND_CAMERA_PARAMS, paramToSend);
+	if(currentParams.numPictures == 1)
+		SetSendingPacketInfo(0, CAMERA_CAPTURE_AND_TRANSMIT_ONE_IMAGE_CONTINUOUSLY, paramToSend);
+	else
+		SetSendingPacketInfo(0, CAMERA_CAPTURE_AND_TRANSMIT_ANALYZED_DATA_CONTINUOUSLY, paramToSend);
 	SendPacket();
 	saveLastCameraParam(params["mode"], params["count"]);
 }
@@ -424,7 +458,7 @@ void DeviceController::CollectImageData(void) {
 	unsigned short packet_number = (hReceivedPacket.number[1] << 8) + hReceivedPacket.number[0];
 	static unsigned int data_total_length = 0;
 	static unsigned int received_total_length_ = 0;
-	static int fileCount = 0;
+	static int fileCount = 0, pixelInfoOrder = 0;
 	if (image_piece_number_ != packet_number) {
 		std::cerr << "The order of data is packet is wrong" << endl;
 		// ERROR HANDLING WHEN THE DATA IS CRASHED
@@ -442,11 +476,25 @@ void DeviceController::CollectImageData(void) {
 		// The image is taken by sending camera parameters
 		if (paramsQueue.empty() == 0) {
 			cout << "count : " << lastCameraParam.count;
-			pImageProcessing_->SetFileName(lastCameraParam.paramName, lastCameraParam.paramVal, currentParams.exposureTime, fileCount++);
-			if (fileCount == lastCameraParam.count) {
-				fileCount = 0;
-				paramsQueue.pop();
+			pImageProcessing_->SetFileName(currentParams);
+			//pImageProcessing_->SetFileName(lastCameraParam.paramName, lastCameraParam.paramVal, currentParams.exposureTime, fileCount++);
+			if (currentParams.numPictures == 1) {
+				fileCount++;
+				if (fileCount == lastCameraParam.count) {
+					fileCount = 0;
+					paramsQueue.pop();
+				}
 			}
+			else {
+				if (pixelInfoOrder == 0) {
+					pixelInfoOrder++;
+				}
+				else {
+					pixelInfoOrder = 0;
+					fileCount = 0;
+					paramsQueue.pop();
+				}
+			}			
 		}
 
 		pImageProcessing_->SetImgType(img_format);
@@ -468,7 +516,7 @@ void DeviceController::CollectImageData(void) {
 		system("cls");
 		if (paramsQueue.empty() == 0) {
 			Sleep(1000);
-			captureContinuously();
+			captureAndSendDataContinuously();
 		}
 
 		return;

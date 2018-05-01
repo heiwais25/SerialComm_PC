@@ -74,7 +74,9 @@ const enum DeviceCommand {
 	CAMERA_SET_NUMBER_OF_PICTURES,
 	CAMERA_SET_ADC_MINIMUM,
 	CAMERA_CAPTURE_AND_TRANSMIT,
-	CAMERA_SEND_CAMERA_PARAMS,
+	CAMERA_CAPTURE_AND_TRANSMIT_ONE_IMAGE_CONTINUOUSLY,
+	CAMERA_CAPTURE_AND_TRANSMIT_ANALYZED_DATA_CONTINUOUSLY,
+
 
 
 	// IMAGE_TRANSMISSION(30~49)
@@ -109,10 +111,20 @@ const enum DeviceCommand {
 	TURN_OFF_LED,
 	BLANK_LED,
 
-	
-	
-
-	
-
 };
 
+typedef struct LastCameraParamType {
+	string paramName;
+	int paramVal;
+	int count;
+} LastCameraParam;
+
+typedef struct CameraParamsType {
+	uint16_t cds;
+	uint16_t vga;
+	uint16_t blackLevel;
+	uint16_t exposureTime;
+	uint16_t ledTime;
+	uint16_t adcMinimum;
+	uint16_t numPictures;
+} CameraParams;

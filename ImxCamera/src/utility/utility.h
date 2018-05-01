@@ -61,3 +61,6 @@ vector<BYTE> wordToByteVector(int a);
 
 // To get camaera param info from paramSetInfo file
 queue < map<string, int> > getParamFromCSV(string fileName, int paramNum = 6);
+
+bool isFileExist(const string & name);
+

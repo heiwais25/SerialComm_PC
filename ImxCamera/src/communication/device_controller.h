@@ -11,20 +11,6 @@ const enum CAMERA_PARAMS {
 	EXPOSRUE_TIME,
 };
 
-typedef struct LastCameraParamType {
-	string paramName;
-	int paramVal;
-	int count;
-} LastCameraParam;
-
-typedef struct CameraParamsType {
-	uint16_t cds;
-	uint16_t vga;
-	uint16_t blackLevel;
-	uint16_t exposureTime;
-	uint16_t ledTime;
-	uint16_t adcMinimum;
-} CameraParams;
 
 typedef struct CameraAnalysisParamsType {
 	uint16_t param;
@@ -84,7 +70,11 @@ public:
 
 	// Send camera params after reading it from paramSetInfo file
 	// It will capture to the same number of set in the file
-	void captureContinuously();
+	void captureAndSendDataContinuously();
+
+	// Send camera params and receive data analyzing our desired number of captured image
+	void captureAndSendAnalyzedDataContinuously();
+
 	void initCameraParams();
 
 	void DoControlCamera(void);

@@ -192,3 +192,20 @@ queue < map<string, int> > getParamFromCSV(string fileName, int paramNum) {
 	}
 	return retQueue;
 }
+
+/* ===================================================================================================
+	Description
+	- Before saving image, check the name of file is already existing in the directory
+	Return
+	- (bool) File exists already or not
+=================================================================================================== */
+bool isFileExist(const string & name) {
+	ifstream f(name.c_str());
+	if (f.good()) {
+		f.close();
+		return true;
+	}
+	else {
+		return false;
+	}
+}

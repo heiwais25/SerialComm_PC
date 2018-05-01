@@ -118,6 +118,47 @@ void ImageProcessing::ImageModification(void) {
 	cout << "Image modification finished" << endl;
 }
 
+void ImageProcessing::SetFileName(CameraParams cameraParams) {
+	stringstream stream;
+	stream << hex << cameraParams.adcMinimum;
+	string strAdcMinimum = "0x" + stream.str();
+	// Case 1 : save individual image
+	if (cameraParams.numPictures == 1) {
+		fileNameWithParam = "cds_" + to_string(cameraParams.cds) + "_vga_" + to_string(cameraParams.vga) + "_exp_" + \
+			to_string(cameraParams.exposureTime) + "_led_" + to_string(cameraParams.ledTime) + "_adc_" + strAdcMinimum + "_";
+	}
+	// Case 2 : save pixel information
+	else {
+		string pixelInfoName;
+		if (kPixelInfoOrder == 0) {
+			kPixelInfoOrder++;
+			pixelInfoName = "pixel_mean";
+		}
+		else {
+			kPixelInfoOrder = 0;
+			pixelInfoName = "pixel_std";
+		}
+		fileNameWithParam = pixelInfoName + "_cds_" + to_string(cameraParams.cds) + "_vga_" + to_string(cameraParams.vga) + "_exp_" + \
+			to_string(cameraParams.exposureTime) + "_led_" + to_string(cameraParams.ledTime) + "_adc_" + strAdcMinimum + "_";
+		kIsPixelLog = true;
+	}
+
+	// Check the file is already exist or not
+	int fileCount = 0;
+	while (1) {
+		if (!isFileExist(output_dir + fileNameWithParam + to_string(fileCount))) {
+			fileNameWithParam += to_string(fileCount);
+			break;
+		}
+		/*else {
+			while (1) {
+				cout << "File is already existing" << endl;
+			}
+		}*/
+		fileCount++;
+	}
+}
+
 
 void ImageProcessing::SetFileName(string paramName, int paramVal, int expVal, int count) {
 	string paramValStr = to_string(expVal);
@@ -154,6 +195,9 @@ void ImageProcessing::UnpackPixelInfo() {
 void ImageProcessing::SavePixelLog(void) {
 	std::string file_name_str = GetFileNameDayHourMinSec();
 	file_name_str = output_dir + file_name_str;
+	if (fileNameWithParam.size() != 0) {
+		file_name_str = output_dir + fileNameWithParam;
+	}
 	std::ofstream raw_file;
 	raw_file.open(file_name_str, std::ios::binary);
 
@@ -161,15 +205,17 @@ void ImageProcessing::SavePixelLog(void) {
 
 	cout << "Saved Pixel Log : " << file_name_str << "\tFile size : " << collected_image_total_length_ << endl;
 	raw_file.close();
-	kIsPixelLog = false;
 }
 
 void ImageProcessing::ChooseImageProcessOption(void) {
 	if (kIsPixelLog) {
 		SavePixelLog();
+		fileNameWithParam = "";
+		initImageProcessOption();
+		kIsPixelLog = false;
 		return;
 	}
-	
+
 	if (fileNameWithParam.size() != 0) {
 		// save raw data
 		SaveInBitmapImage(MODIFIED_IMAGE);

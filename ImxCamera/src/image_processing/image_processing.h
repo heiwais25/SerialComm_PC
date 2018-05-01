@@ -6,7 +6,7 @@
 #include <vector>
 #include <algorithm>
 #include "utility.h"
-
+#include "comm_protocol.h"
 #include "python_plot.h"
 #include "png_converter.h"
 #include "png.h"
@@ -118,7 +118,7 @@ class ImageProcessing {
 			image_width_from_png_(0),
 			image_height_from_png_(0),
 			kIsPixelLog(false),
-			fileNameWithParam("")
+			fileNameWithParam(""), kPixelInfoOrder(0)
 		{
 			imgHighBytes.reserve(CUT_OFF_IMG_TOTAL_LENGTH / 2);
 			imgLowBytes.reserve(CUT_OFF_IMG_TOTAL_LENGTH / 2);
@@ -181,6 +181,7 @@ class ImageProcessing {
 
 		// If specific parameter is set, it will save the param info to use for file name
 		void SetFileName(string paramName, int paramVal, int expVal, int count);
+		void SetFileName(CameraParams cameraParams);
 
 	private:
 
@@ -226,4 +227,5 @@ class ImageProcessing {
 		int kIsAnalysisParams;
 
 		BYTE kHaveImageDimension;
+		BYTE kPixelInfoOrder;
 };
