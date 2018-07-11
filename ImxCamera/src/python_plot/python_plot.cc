@@ -131,9 +131,6 @@ int PythonPlot::DrawPlot(std::string func_name){
 }
 
 
-// 앞의 전체적인 process가 돌아간 경우에만 사용한다.
-// kInitialized를 지속적으로 check해야함
-// 이 함수는 마지막에만 호출
 int PythonPlot::FinalizePythonThread(void) {
 	kIsInitialized = false;
 	kIsImageDataCopied = false;

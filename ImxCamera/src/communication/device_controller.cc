@@ -106,37 +106,6 @@ void DeviceController::DoControlCamera(void) {
 		break;
 	}
 }
-//
-//void DeviceController::captureAndSendAnalyzedDataContinuously() {
-//	// 1. Read camera params from paramSet
-//	int paramNum = 8;
-//	if (paramsQueue.empty()) {
-//		paramsQueue = getParamFromCSV("paramSet/paramSetInfo.prn", paramNum);
-//		if (paramsQueue.empty()) {
-//			cout << "No data in the paramSet" << endl;
-//			return;
-//		}
-//
-//		if (paramsQueue.front().size() != paramNum) {
-//			cout << "Wrong reading function" << endl;
-//			return;
-//		}
-//		paramsToSendNum = paramsQueue.size();
-//	}
-//
-//	// 2. Copy params to currentParam
-//	auto params = paramsQueue.front();
-//	currentParams.cds = params["cds"];
-//	currentParams.vga = params["vga"];
-//	currentParams.blackLevel = params["blackLevel"];
-//	currentParams.exposureTime = params["exposureTime"];
-//	currentParams.ledTime = params["ledTime"];
-//	currentParams.adcMinimum = params["adcMinimum"];
-//
-//
-//}
-
-
 
 
 /*===============================================================================================================================================================================================================================================================

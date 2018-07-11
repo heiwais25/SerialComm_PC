@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "image_processing.h"
 
-// Todo : 16bit로 저장하기
-
 
 ImageProcessing::~ImageProcessing() {
 }
